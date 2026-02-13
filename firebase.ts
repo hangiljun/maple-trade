@@ -1,3 +1,4 @@
+// Import the functions you need from the SDKs you need
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
@@ -11,6 +12,8 @@ const firebaseConfig = {
   measurementId: "G-HEWSR2MDQB"
 };
 
-// 앱 초기화 시 중복 방지 로직
+// 여기서 에러가 많이 납니다. "이미 켜져있으면 켜진 거 쓰고, 아니면 새로 켜라"는 코드입니다.
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+
+// 데이터베이스 도구를 내보냅니다.
 export const db = getFirestore(app);
