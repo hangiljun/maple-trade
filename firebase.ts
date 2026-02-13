@@ -11,5 +11,6 @@ const firebaseConfig = {
   measurementId: "G-HEWSR2MDQB"
 };
 
+// 앱 초기화 시 중복 방지 로직
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const db = getFirestore(app);
