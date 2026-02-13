@@ -1,70 +1,34 @@
 "use client";
-import React, { useState } from 'react';
-import Link from 'next/link';
+import React, { useState, useEffect } from 'react';
+import { db } from '../../firebase';
+import { collection, addDoc, query, orderBy, getDocs, serverTimestamp } from 'firebase/firestore';
 
 export default function ReviewsPage() {
-  const [reviews, setReviews] = useState([
-    { id: 1, server: '스카니아', name: '김**', content: '쿨거래 감사합니다. 바로 정산해주시네요!', date: '2026-02-14' },
-    { id: 2, server: '루나', name: '이**', content: '챌린저스 서버도 매입해주셔서 좋았어요.', date: '2026-02-14' },
-  ]);
-  const [newReview, setNewReview] = useState({ server: '스카니아', name: '', content: '' });
+  const [list, setList] = useState<any[]>([]);
+  const [form, setForm] = useState({ name: '', server: '스카니아', content: '' });
 
-  const handleAddReview = () => {
-    if (!newReview.name || !newReview.content) return alert("내용을 입력해주세요!");
-    const review = {
-      id: Date.now(),
-      server: newReview.server,
-      name: newReview.name,
-      content: newReview.content,
-      date: new Date().toISOString().split('T')[0]
-    };
-    setReviews([review, ...reviews]);
-    setNewReview({ server: '스카니아', name: '', content: '' });
-    alert("후기가 등록되었습니다!");
+  const fetch = async () => {
+    const q = query(collection(db, 'reviews'), orderBy('createdAt', 'desc'));
+    const snap = await getDocs(q);
+    setList(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  };
+
+  useEffect(() => { fetch(); }, []);
+
+  const handleSave = async () => {
+    await addDoc(collection(db, 'reviews'), { ...form, createdAt: serverTimestamp() });
+    alert('후기 등록!'); fetch(); setForm({ ...form, content: '' });
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f8f9fa', fontFamily: 'sans-serif', color: '#333' }}>
-      <nav style={{ backgroundColor: '#fff', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', position: 'sticky', top: 0, zIndex: 50 }}>
-        <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '70px', padding: '0 20px' }}>
-          <Link href="/" style={{ fontSize: '26px', fontWeight: '900', color: '#2563eb', textDecoration: 'none', letterSpacing: '-1px' }}>메이플 아이템</Link>
-          <div style={{ display: 'flex', gap: '30px' }}>
-            <Link href="/" style={{ fontSize: '18px', fontWeight: 'bold', color: '#555', textDecoration: 'none', padding: '19px 0' }}>메인</Link>
-            <Link href="/tip" style={{ fontSize: '18px', fontWeight: 'bold', color: '#555', textDecoration: 'none', padding: '19px 0' }}>거래방법</Link>
-            <Link href="/reviews" style={{ fontSize: '18px', fontWeight: 'bold', color: '#2563eb', textDecoration: 'none', borderBottom: '3px solid #2563eb', padding: '19px 0' }}>이용후기</Link>
-            <Link href="/news" style={{ fontSize: '18px', fontWeight: 'bold', color: '#555', textDecoration: 'none', padding: '19px 0' }}>최신뉴스</Link>
-          </div>
-        </div>
-      </nav>
-
-      <div style={{ maxWidth: '1100px', margin: '40px auto', padding: '0 20px' }}>
-        <h2 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '30px', color: '#2d3748' }}>실시간 거래 후기</h2>
-        
-        <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '20px', marginBottom: '40px', border: '2px solid #e2e8f0' }}>
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-            <select value={newReview.server} onChange={(e) => setNewReview({...newReview, server: e.target.value})} style={{ padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e0' }}>
-              <option>스카니아</option><option>루나</option><option>엘리시움</option><option>크로아</option>
-            </select>
-            <input type="text" placeholder="이름" value={newReview.name} onChange={(e) => setNewReview({...newReview, name: e.target.value})} style={{ padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e0', width: '100px' }} />
-          </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <input type="text" placeholder="내용 입력" value={newReview.content} onChange={(e) => setNewReview({...newReview, content: e.target.value})} style={{ flex: 1, padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e0' }} />
-            <button onClick={handleAddReview} style={{ padding: '12px 24px', backgroundColor: '#2563eb', color: '#fff', fontWeight: 'bold', border: 'none', borderRadius: '10px', cursor: 'pointer' }}>등록</button>
-          </div>
-        </div>
-
-        <div style={{ display: 'grid', gap: '15px' }}>
-          {reviews.map((review) => (
-            <div key={review.id} style={{ backgroundColor: '#fff', padding: '25px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <span style={{ fontWeight: 'bold' }}>[{review.server}] {review.name}님</span>
-                <span style={{ color: '#aaa' }}>{review.date}</span>
-              </div>
-              <p>{review.content}</p>
-            </div>
-          ))}
-        </div>
+    <div style={{ maxWidth: '800px', margin: '40px auto', padding: '0 20px' }}>
+      <h2>이용후기</h2>
+      <div style={{ marginBottom: '30px' }}>
+        <input placeholder="이름" onChange={e => setForm({...form, name: e.target.value})} />
+        <input placeholder="내용" onChange={e => setForm({...form, content: e.target.value})} />
+        <button onClick={handleSave}>등록</button>
       </div>
+      {list.map(r => <div key={r.id} style={{ borderBottom: '1px solid #eee', padding: '10px' }}><b>{r.name}</b>: {r.content}</div>)}
     </div>
   );
 }
