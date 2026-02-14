@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 255, 255, 255;
+  --background-end-rgb: 248, 250, 252;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(to bottom, transparent, rgb(var(--background-end-rgb)))
+    rgb(var(--background-start-rgb));
+}
+
+/* 5번 요청: 네온사인 깜빡임 효과 */
+@keyframes neon-flicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    text-shadow: 0 0 5px #ff00de, 0 0 10px #ff00de, 0 0 20px #ff00de, 0 0 40px #ff00de;
+    color: #fff;
+    opacity: 1;
+  }
+  20%, 24%, 55% {
+    text-shadow: none;
+    color: #444;
+    opacity: 0.5;
+  }
+}
+
+.neon-text {
+  animation: neon-flicker 2.5s infinite alternate;
+  font-weight: bold;
+  color: #fff;
+}

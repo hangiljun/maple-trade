@@ -1,44 +1,341 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
+import Link from 'next/link';
+import { Plus, Trash2, Edit, Save, Image as ImageIcon, RefreshCcw } from "lucide-react";
 import { db } from '../../firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, doc, query, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore';
 
 export default function AdminPage() {
+  // --- 상태 관리 (기능 로직) ---
   const [isAdmin, setIsAdmin] = useState(false);
-  const [pw, setPw] = useState('');
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+  const [password, setPassword] = useState("");
+  const [activeTab, setActiveTab] = useState("news");
 
-  const handleSave = async () => {
-    if (!title || !content) return alert("내용을 입력해주세요.");
-    try {
-      // 정확히 'news' 보관함에 저장합니다.
-      await addDoc(collection(db, "news"), {
-        title,
-        content,
-        date: new Date().toLocaleDateString('ko-KR'),
-        createdAt: serverTimestamp(),
-      });
-      alert("구글 서버 저장 성공!");
-      setTitle(''); setContent('');
-    } catch (e) {
-      alert("저장 실패: " + e);
+  // 데이터 리스트 상태
+  const [newsList, setNewsList] = useState<any[]>([]);
+  const [tipsList, setTipsList] = useState<any[]>([]);
+  const [reviewsList, setReviewsList] = useState<any[]>([]);
+
+  // 입력 폼 상태
+  const [inputTitle, setInputTitle] = useState("");
+  const [inputContent, setInputContent] = useState("");
+
+  // --- 로그인 처리 ---
+  const handleLogin = () => {
+    if (password === "1234") {
+      setIsAdmin(true);
+    } else {
+      alert("비밀번호가 틀렸습니다.");
     }
   };
 
-  if (!isAdmin) return (
-    <div style={{ textAlign: 'center', marginTop: '100px' }}>
-      <input type="password" placeholder="비번" onChange={e => setPw(e.target.value)} style={{ padding: '10px' }} />
-      <button onClick={() => pw === '1234' ? setIsAdmin(true) : alert('틀림')} style={{ padding: '10px' }}>로그인</button>
-    </div>
-  );
+  // --- 데이터 불러오기 (실시간 연동) ---
+  useEffect(() => {
+    if (!isAdmin) return;
 
+    // 1. 뉴스 구독
+    const qNews = query(collection(db, "news"), orderBy("createdAt", "desc"));
+    const unsubNews = onSnapshot(qNews, (snap) => {
+      setNewsList(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+
+    // 2. 팁(거래방법) 구독
+    const qTips = query(collection(db, "tips"), orderBy("createdAt", "desc"));
+    const unsubTips = onSnapshot(qTips, (snap) => {
+      setTipsList(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+
+    // 3. 후기 구독
+    const qReviews = query(collection(db, "reviews"), orderBy("createdAt", "desc"));
+    const unsubReviews = onSnapshot(qReviews, (snap) => {
+      setReviewsList(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+
+    return () => { unsubNews(); unsubTips(); unsubReviews(); };
+  }, [isAdmin]);
+
+  // --- 글 저장 함수 ---
+  const handleSave = async (collectionName: string) => {
+    if (!inputTitle || !inputContent) return alert("제목과 내용을 모두 입력해주세요.");
+    
+    try {
+      await addDoc(collection(db, collectionName), {
+        title: inputTitle,
+        content: inputContent,
+        date: new Date().toLocaleDateString('ko-KR'),
+        createdAt: serverTimestamp(),
+      });
+      alert("등록되었습니다!");
+      setInputTitle(""); // 입력창 초기화
+      setInputContent("");
+    } catch (e) {
+      alert("에러 발생: " + e);
+    }
+  };
+
+  // --- 글 삭제 함수 ---
+  const handleDelete = async (collectionName: string, id: string) => {
+    if (confirm("정말 삭제하시겠습니까?")) {
+      try {
+        await deleteDoc(doc(db, collectionName, id));
+        alert("삭제되었습니다.");
+      } catch (e) {
+        alert("삭제 실패: " + e);
+      }
+    }
+  };
+
+  // --- 로그인 화면 ---
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="bg-white p-8 rounded-xl shadow-lg w-96">
+          <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">관리자 접속</h2>
+          <input 
+            type="password" 
+            placeholder="비밀번호 (1234)" 
+            className="w-full p-3 border rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+          />
+          <button 
+            onClick={handleLogin}
+            className="w-full bg-blue-600 text-white p-3 rounded-lg font-bold hover:bg-blue-700 transition"
+          >
+            로그인
+          </button>
+          <div className="text-center mt-4">
+             <Link href="/" className="text-sm text-gray-500 hover:text-blue-500">← 메인으로 돌아가기</Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- 관리자 대시보드 화면 ---
   return (
-    <div style={{ maxWidth: '600px', margin: '50px auto', padding: '20px' }}>
-      <h2>🛠️ 최신뉴스 관리자</h2>
-      <input value={title} onChange={e => setTitle(e.target.value)} placeholder="제목" style={{ width: '100%', padding: '10px', marginBottom: '10px' }} />
-      <textarea value={content} onChange={e => setContent(e.target.value)} placeholder="내용" style={{ width: '100%', height: '200px', padding: '10px' }} />
-      <button onClick={handleSave} style={{ width: '100%', padding: '15px', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 'bold' }}>서버 전송</button>
+    <div className="max-w-7xl mx-auto px-4 py-10 min-h-screen font-sans">
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">관리자 대시보드</h1>
+          <p className="text-gray-500 text-sm mt-1">구글 데이터베이스(Firebase)와 정상 연결됨 🟢</p>
+        </div>
+        <Link href="/" className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-bold hover:bg-gray-200">
+          내 사이트 바로가기
+        </Link>
+      </div>
+
+      <div className="flex flex-col md:flex-row gap-8">
+        {/* 사이드바 메뉴 */}
+        <div className="w-full md:w-64 bg-white rounded-lg shadow-sm p-4 h-fit border border-gray-200">
+          <ul className="space-y-2">
+            <li>
+              <button 
+                onClick={() => setActiveTab("news")}
+                className={`w-full text-left px-4 py-3 rounded-md font-medium transition ${activeTab === "news" ? "bg-blue-50 text-blue-600" : "hover:bg-gray-50 text-gray-600"}`}
+              >
+                📢 메이플 이슈 (뉴스)
+              </button>
+            </li>
+            <li>
+              <button 
+                onClick={() => setActiveTab("guide")}
+                className={`w-full text-left px-4 py-3 rounded-md font-medium transition ${activeTab === "guide" ? "bg-blue-50 text-blue-600" : "hover:bg-gray-50 text-gray-600"}`}
+              >
+                💡 거래방법 (이용안내)
+              </button>
+            </li>
+            <li>
+              <button 
+                onClick={() => setActiveTab("reviews")}
+                className={`w-full text-left px-4 py-3 rounded-md font-medium transition ${activeTab === "reviews" ? "bg-blue-50 text-blue-600" : "hover:bg-gray-50 text-gray-600"}`}
+              >
+                💬 이용후기 관리
+              </button>
+            </li>
+             <li>
+              <button 
+                onClick={() => setActiveTab("main")}
+                className={`w-full text-left px-4 py-3 rounded-md font-medium transition ${activeTab === "main" ? "bg-blue-50 text-blue-600" : "hover:bg-gray-50 text-gray-600"}`}
+              >
+                🖼️ 메인 홍보 관리
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        {/* 컨텐츠 영역 */}
+        <div className="flex-1 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          
+          {/* [1] 최신 뉴스 관리 섹션 */}
+          {activeTab === "news" && (
+            <div>
+              <h2 className="text-xl font-bold mb-6 text-gray-800 border-b pb-2">메이플 이슈 작성 및 관리</h2>
+              
+              {/* 글쓰기 폼 */}
+              <div className="bg-gray-50 p-5 rounded-xl mb-8 border border-gray-200">
+                <input 
+                  type="text" 
+                  placeholder="제목을 입력하세요" 
+                  className="w-full p-3 border rounded-lg mb-3 focus:outline-none focus:border-blue-500"
+                  value={inputTitle} 
+                  onChange={(e) => setInputTitle(e.target.value)}
+                />
+                <textarea 
+                  placeholder="내용을 입력하세요" 
+                  className="w-full p-3 border rounded-lg h-32 mb-3 focus:outline-none focus:border-blue-500"
+                  value={inputContent} 
+                  onChange={(e) => setInputContent(e.target.value)}
+                />
+                <button 
+                  onClick={() => handleSave("news")}
+                  className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition flex justify-center items-center gap-2"
+                >
+                  <Save size={18} /> 뉴스 등록하기
+                </button>
+              </div>
+
+              {/* 리스트 */}
+              <div className="space-y-4">
+                {newsList.length === 0 ? <p className="text-center text-gray-400 py-10">등록된 뉴스가 없습니다.</p> : 
+                  newsList.map((item) => (
+                  <div key={item.id} className="border p-5 rounded-xl flex justify-between items-start hover:bg-gray-50 transition">
+                    <div>
+                      <h3 className="font-bold text-gray-800 text-lg">{item.title}</h3>
+                      <p className="text-gray-600 mt-1 whitespace-pre-line">{item.content}</p>
+                      <p className="text-xs text-gray-400 mt-2">{item.date}</p>
+                    </div>
+                    <button 
+                      onClick={() => handleDelete("news", item.id)}
+                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition"
+                      title="삭제"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* [2] 이용안내 관리 섹션 */}
+          {activeTab === "guide" && (
+            <div>
+              <h2 className="text-xl font-bold mb-6 text-gray-800 border-b pb-2">거래 방법(Tip) 작성 및 관리</h2>
+              
+              <div className="bg-gray-50 p-5 rounded-xl mb-8 border border-gray-200">
+                <input 
+                  type="text" 
+                  placeholder="팁 제목 (예: 카톡 거래 방법)" 
+                  className="w-full p-3 border rounded-lg mb-3 focus:outline-none focus:border-blue-500"
+                  value={inputTitle} 
+                  onChange={(e) => setInputTitle(e.target.value)}
+                />
+                <textarea 
+                  placeholder="상세 내용을 입력하세요" 
+                  className="w-full p-3 border rounded-lg h-32 mb-3 focus:outline-none focus:border-blue-500"
+                  value={inputContent} 
+                  onChange={(e) => setInputContent(e.target.value)}
+                />
+                <button 
+                  onClick={() => handleSave("tips")}
+                  className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition flex justify-center items-center gap-2"
+                >
+                  <Plus size={18} /> 가이드 등록하기
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {tipsList.length === 0 ? (
+                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-10 text-center text-gray-500">
+                      <p>현재 등록된 가이드가 없습니다.</p>
+                   </div>
+                ) : tipsList.map((item) => (
+                  <div key={item.id} className="border p-5 rounded-xl flex justify-between items-start hover:bg-gray-50 transition">
+                    <div>
+                      <h3 className="font-bold text-gray-800 text-lg">💡 {item.title}</h3>
+                      <p className="text-gray-600 mt-1 whitespace-pre-line">{item.content}</p>
+                      <p className="text-xs text-gray-400 mt-2">{item.date}</p>
+                    </div>
+                    <button 
+                      onClick={() => handleDelete("tips", item.id)}
+                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* [3] 후기 관리 섹션 */}
+           {activeTab === "reviews" && (
+            <div>
+              <h2 className="text-xl font-bold mb-6 border-b pb-2">유저 후기 관리</h2>
+              <p className="mb-4 text-sm text-gray-500">손님들이 작성한 후기를 삭제할 수 있습니다.</p>
+              
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-gray-100 border-b">
+                      <th className="py-3 px-4 font-semibold text-gray-600">작성자/서버</th>
+                      <th className="py-3 px-4 font-semibold text-gray-600">내용</th>
+                      <th className="py-3 px-4 font-semibold text-gray-600">날짜</th>
+                      <th className="py-3 px-4 font-semibold text-gray-600 w-20">관리</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reviewsList.length === 0 ? (
+                      <tr><td colSpan={4} className="text-center py-10 text-gray-400">등록된 후기가 없습니다.</td></tr>
+                    ) : reviewsList.map((review) => (
+                      <tr key={review.id} className="border-b hover:bg-gray-50">
+                        <td className="py-3 px-4 font-bold text-gray-700">
+                          {review.name} <br/>
+                          <span className="text-xs font-normal text-blue-500 bg-blue-50 px-2 py-0.5 rounded">{review.server}</span>
+                        </td>
+                        <td className="py-3 px-4 text-gray-600 max-w-xs">{review.content}</td>
+                        <td className="py-3 px-4 text-sm text-gray-400">{review.date || '날짜없음'}</td>
+                        <td className="py-3 px-4">
+                           <button 
+                             onClick={() => handleDelete("reviews", review.id)}
+                             className="text-red-500 hover:text-red-700 p-2 rounded hover:bg-red-50"
+                             title="삭제"
+                           >
+                             <Trash2 size={18} />
+                           </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* [4] 메인 홍보 관리 (현재는 UI만 제공) */}
+          {activeTab === "main" && (
+            <div>
+              <h2 className="text-xl font-bold mb-6 border-b pb-2">메인 페이지 관리</h2>
+              <div className="bg-yellow-50 p-4 rounded-lg text-yellow-800 text-sm mb-6">
+                🚧 이미지 업로드 기능은 추후 'Firebase Storage' 연결 후 활성화됩니다. 현재는 준비 중입니다.
+              </div>
+              
+              <div className="mb-8">
+                <h3 className="font-bold text-gray-700 mb-2">현재 홍보 배너</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="aspect-video bg-gray-100 rounded-lg flex flex-col items-center justify-center border-2 border-dashed border-gray-300 cursor-pointer hover:bg-gray-50 transition">
+                    <ImageIcon className="text-gray-400 mb-2" />
+                    <span className="text-sm text-gray-500">이미지 추가 (준비중)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+        </div>
+      </div>
     </div>
   );
 }

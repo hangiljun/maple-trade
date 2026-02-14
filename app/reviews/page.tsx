@@ -1,49 +1,101 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { db } from '../../firebase';
-import { collection, addDoc, query, orderBy, getDocs, serverTimestamp } from 'firebase/firestore';
+
+import { useState } from "react";
+import { Star, User, Send } from "lucide-react";
 
 export default function ReviewsPage() {
-  const [list, setList] = useState<any[]>([]);
-  const [form, setForm] = useState({ name: '', server: '스카니아', content: '' });
+  // 가짜 데이터 (초기 후기들)
+  const [reviews, setReviews] = useState([
+    { id: 1, name: "비숍조아", content: "새벽인데도 바로 칼답해주셔서 놀랐어요. 감사합니다!", date: "2026.02.14", rating: 5 },
+    { id: 2, name: "히어로99", content: "급처템이라 가격 걱정했는데 시세보다 훨씬 잘 쳐주시네요.", date: "2026.02.13", rating: 5 },
+    { id: 3, name: "메린이", content: "첫 거래라 무서웠는데 친절하게 알려주셔서 성공했습니다.", date: "2026.02.13", rating: 4 },
+  ]);
 
-  const fetchReviews = async () => {
-    const q = query(collection(db, 'reviews'), orderBy('createdAt', 'desc'));
-    const snap = await getDocs(q);
-    setList(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-  };
+  const [newReview, setNewReview] = useState("");
+  const [nickname, setNickname] = useState("");
 
-  useEffect(() => { fetchReviews(); }, []);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newReview || !nickname) return alert("닉네임과 내용을 입력해주세요!");
 
-  const handleSave = async () => {
-    if(!form.name || !form.content) return alert("내용을 입력하세요.");
-    await addDoc(collection(db, 'reviews'), { ...form, createdAt: serverTimestamp(), date: new Date().toLocaleDateString() });
-    alert('후기 등록 완료!');
-    setForm({ ...form, content: '' });
-    fetchReviews();
+    const review = {
+      id: Date.now(),
+      name: nickname,
+      content: newReview,
+      date: new Date().toLocaleDateString(),
+      rating: 5,
+    };
+
+    setReviews([review, ...reviews]); // 새 글을 맨 위에 추가
+    setNewReview("");
+    setNickname("");
+    alert("후기가 등록되었습니다!");
   };
 
   return (
-    <div style={{ maxWidth: '800px', margin: '40px auto', padding: '0 20px', fontFamily:'sans-serif' }}>
-      <Link href="/">🏠 홈으로</Link>
-      <h2 style={{fontSize:'28px', fontWeight:'bold', margin:'20px 0'}}>이용후기</h2>
-      <div style={{ backgroundColor:'#fff', padding:'20px', borderRadius:'15px', border:'1px solid #ddd', marginBottom:'30px' }}>
-        <div style={{display:'flex', gap:'10px', marginBottom:'10px'}}>
-          <input placeholder="이름" value={form.name} onChange={e => setForm({...form, name: e.target.value})} style={{padding:'10px', borderRadius:'5px', border:'1px solid #ccc'}} />
-          <select value={form.server} onChange={e => setForm({...form, server: e.target.value})} style={{padding:'10px', borderRadius:'5px', border:'1px solid #ccc'}}>
-            <option>스카니아</option><option>루나</option><option>엘리시움</option><option>크로아</option>
-          </select>
-        </div>
-        <input placeholder="후기 내용을 입력하세요" value={form.content} onChange={e => setForm({...form, content: e.target.value})} style={{width:'100%', padding:'15px', borderRadius:'5px', border:'1px solid #ccc', marginBottom:'10px'}} />
-        <button onClick={handleSave} style={{width:'100%', padding:'15px', backgroundColor:'#2563eb', color:'#fff', border:'none', borderRadius:'5px', fontWeight:'bold', cursor:'pointer'}}>후기 등록</button>
+    <div className="max-w-3xl mx-auto px-4 py-12">
+      <h1 className="text-3xl font-bold text-center mb-10">이용후기</h1>
+
+      {/* 후기 작성 폼 */}
+      <div className="bg-white p-6 rounded-2xl shadow-lg border border-blue-100 mb-12">
+        <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+          <span className="w-2 h-8 bg-blue-600 rounded-full"></span>
+          후기 작성하기
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="flex gap-4">
+            <input 
+              type="text" 
+              placeholder="닉네임" 
+              className="border p-3 rounded-lg w-1/3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+            />
+            <div className="flex items-center gap-1 text-yellow-400">
+               <Star fill="currentColor" />
+               <Star fill="currentColor" />
+               <Star fill="currentColor" />
+               <Star fill="currentColor" />
+               <Star fill="currentColor" />
+            </div>
+          </div>
+          <textarea 
+            rows={3}
+            placeholder="거래 후기를 남겨주세요. (욕설 및 비방은 삭제될 수 있습니다.)"
+            className="w-full border p-3 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={newReview}
+            onChange={(e) => setNewReview(e.target.value)}
+          />
+          <button type="submit" className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition flex justify-center items-center gap-2">
+            <Send size={18} /> 후기 등록하기
+          </button>
+        </form>
       </div>
-      {list.map(r => (
-        <div key={r.id} style={{ borderBottom: '1px solid #eee', padding: '15px 0' }}>
-          <p><b>{r.name}님 ({r.server})</b> <small style={{color:'#aaa'}}>{r.date}</small></p>
-          <p style={{marginTop:'5px', color:'#555'}}>{r.content}</p>
-        </div>
-      ))}
+
+      {/* 후기 리스트 */}
+      <div className="space-y-4">
+        {reviews.map((review) => (
+          <div key={review.id} className="bg-white p-6 rounded-xl border hover:shadow-md transition">
+            <div className="flex justify-between items-start mb-2">
+              <div className="flex items-center gap-2">
+                <div className="bg-gray-100 p-2 rounded-full">
+                  <User size={20} className="text-gray-500" />
+                </div>
+                <div>
+                  <span className="font-bold text-gray-900 block">{review.name}</span>
+                  <span className="text-xs text-gray-400">{review.date}</span>
+                </div>
+              </div>
+              <div className="flex text-yellow-400">
+                {[...Array(review.rating)].map((_, i) => (
+                  <Star key={i} size={14} fill="currentColor" />
+                ))}
+              </div>
+            </div>
+            <p className="text-gray-700 mt-2 pl-12">{review.content}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
