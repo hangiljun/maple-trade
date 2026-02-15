@@ -1,8 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from 'next/link';
-import { Plus, Trash2, Save, Image as ImageIcon } from "lucide-react";
-// ⚠️ [중요] storage를 가져옵니다. 경로가 ../../firebase 인지 확인하세요!
+import { Plus, Trash2, Save, Image as ImageIcon, Video, RefreshCcw } from "lucide-react";
 import { db, storage } from '../../firebase'; 
 import { collection, addDoc, deleteDoc, doc, query, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -12,15 +11,20 @@ export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [activeTab, setActiveTab] = useState("news");
 
+  // 데이터 리스트
   const [newsList, setNewsList] = useState<any[]>([]);
   const [tipsList, setTipsList] = useState<any[]>([]);
   const [reviewsList, setReviewsList] = useState<any[]>([]);
 
+  // 입력 폼
   const [inputTitle, setInputTitle] = useState("");
   const [inputContent, setInputContent] = useState("");
   const [category, setCategory] = useState("공지");
-  const [imageUrl, setImageUrl] = useState(""); // 이미지 주소 저장용
-  const [isUploading, setIsUploading] = useState(false); // 로딩 상태
+  
+  // [파일 업로드 상태]
+  const [fileUrl, setFileUrl] = useState(""); 
+  const [fileType, setFileType] = useState(""); // 'image' 또는 'video'
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleLogin = () => {
     if (password === "1234") setIsAdmin(true);
@@ -38,25 +42,27 @@ export default function AdminPage() {
     return () => { unsubNews(); unsubTips(); unsubReviews(); };
   }, [isAdmin]);
 
-  // [핵심] 사진 선택 시 자동으로 파이어베이스 창고(Storage)로 업로드
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // [핵심] 파일 업로드 함수
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setIsUploading(true); // 로딩 시작
+    setIsUploading(true);
     try {
-      // 저장 경로: news_images 폴더 / 현재시간_파일명
-      const storageRef = ref(storage, `news_images/${Date.now()}_${file.name}`);
-      await uploadBytes(storageRef, file); // 업로드
-      const url = await getDownloadURL(storageRef); // 다운로드 주소 받기
+      const type = file.type.startsWith('video') ? 'video' : 'image';
+      setFileType(type);
+
+      const storageRef = ref(storage, `uploads/${Date.now()}_${file.name}`);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
       
-      setImageUrl(url); // 주소 저장
-      alert("이미지 업로드 성공! 📸");
+      setFileUrl(url);
+      alert(type === 'video' ? "동영상 업로드 성공! 🎥" : "사진 업로드 성공! 📸");
     } catch (error) {
       console.error("업로드 에러:", error);
-      alert("이미지 업로드 중 오류가 발생했습니다. (Storage 설정을 확인하세요)");
+      alert("업로드 중 오류가 발생했습니다.");
     } finally {
-      setIsUploading(false); // 로딩 끝
+      setIsUploading(false);
     }
   };
 
@@ -68,13 +74,13 @@ export default function AdminPage() {
         category: collectionName === "news" ? category : "일반", 
         title: inputTitle,
         content: inputContent,
-        thumbnail: collectionName === "news" ? imageUrl : "", // 뉴스일 때만 사진 주소 저장
+        thumbnail: fileUrl, 
+        fileType: fileType, 
         date: new Date().toLocaleDateString('ko-KR'),
         createdAt: serverTimestamp(),
       });
       alert("등록되었습니다!");
-      // 입력창 초기화
-      setInputTitle(""); setInputContent(""); setImageUrl(""); setCategory("공지");
+      setInputTitle(""); setInputContent(""); setFileUrl(""); setFileType(""); setCategory("공지");
     } catch (e) {
       alert("에러 발생: " + e);
     }
@@ -89,13 +95,36 @@ export default function AdminPage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="bg-white p-8 rounded-xl shadow-lg w-96 text-center">
           <h2 className="text-2xl font-bold mb-6">관리자 접속</h2>
-          <input type="password" placeholder="비밀번호 (1234)" className="w-full p-3 border rounded-lg mb-4" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleLogin()} />
+          <input type="password" placeholder="비밀번호" className="w-full p-3 border rounded-lg mb-4" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleLogin()} />
           <button onClick={handleLogin} className="w-full bg-blue-600 text-white p-3 rounded-lg font-bold">로그인</button>
-          <div className="text-center mt-4"><Link href="/" className="text-sm text-gray-500">← 메인으로</Link></div>
         </div>
       </div>
     );
   }
+
+  // 업로드 UI 컴포넌트
+  const UploadUI = () => (
+    <div className="mb-4">
+      <label className="block text-sm font-bold text-gray-700 mb-2">미디어 업로드 (사진/동영상)</label>
+      <div className="flex items-center gap-3">
+        <label className={`cursor-pointer border border-gray-300 px-4 py-2 rounded-lg font-medium flex items-center gap-2 shadow-sm transition ${isUploading ? 'bg-gray-100' : 'bg-white hover:bg-gray-50'}`}>
+          {isUploading ? <RefreshCcw className="animate-spin" size={18}/> : <ImageIcon size={18} />}
+          {isUploading ? "업로드 중..." : "파일 선택"}
+          <input type="file" accept="image/*, video/*" className="hidden" onChange={handleFileChange} disabled={isUploading} />
+        </label>
+        {fileUrl && <span className="text-sm text-green-600 font-bold">✅ {fileType === 'video' ? '동영상' : '사진'} 준비됨</span>}
+      </div>
+      {fileUrl && (
+        <div className="mt-3">
+          {fileType === 'video' ? (
+            <video src={fileUrl} className="w-40 h-auto rounded-lg border shadow-sm" controls />
+          ) : (
+            <img src={fileUrl} alt="미리보기" className="w-40 h-auto rounded-lg border shadow-sm" />
+          )}
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-10 min-h-screen font-sans">
@@ -105,21 +134,17 @@ export default function AdminPage() {
       </div>
 
       <div className="flex flex-col md:flex-row gap-8">
-        {/* 사이드바 메뉴 */}
         <div className="w-full md:w-64 bg-white rounded-lg shadow-sm p-4 h-fit border border-gray-200">
           <ul className="space-y-2">
             {['news', 'guide', 'reviews', 'main'].map(tab => (
-              <li key={tab}>
-                <button onClick={() => setActiveTab(tab)} className={`w-full text-left px-4 py-3 rounded-md font-bold ${activeTab === tab ? "bg-blue-50 text-blue-600" : "hover:bg-gray-50"}`}>
-                  {tab === 'news' ? '📢 메이플 이슈' : tab === 'guide' ? '💡 거래방법' : tab === 'reviews' ? '💬 이용후기' : '🖼️ 메인 관리'}
-                </button>
-              </li>
+              <li key={tab}><button onClick={() => {setActiveTab(tab); setFileUrl("");}} className={`w-full text-left px-4 py-3 rounded-md font-bold ${activeTab === tab ? "bg-blue-50 text-blue-600" : "hover:bg-gray-50"}`}>{tab === 'news' ? '📢 메이플 이슈' : tab === 'guide' ? '💡 거래방법(이용안내)' : tab === 'reviews' ? '💬 이용후기' : '🖼️ 메인 관리'}</button></li>
             ))}
           </ul>
         </div>
 
-        {/* 컨텐츠 영역 */}
         <div className="flex-1 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          
+          {/* 뉴스 탭 */}
           {activeTab === "news" && (
             <div>
               <h2 className="text-xl font-bold mb-6 border-b pb-2">메이플 이슈 작성</h2>
@@ -131,36 +156,22 @@ export default function AdminPage() {
                   <option value="점검">⚠️ 점검안내</option>
                   <option value="이슈">🔥 화제의 이슈</option>
                 </select>
-                <input type="text" placeholder="제목을 입력하세요" className="w-full p-3 border rounded-lg mb-3" value={inputTitle} onChange={(e) => setInputTitle(e.target.value)} />
-                <textarea placeholder="내용을 입력하세요" className="w-full p-3 border rounded-lg h-32 mb-3" value={inputContent} onChange={(e) => setInputContent(e.target.value)} />
-                
-                {/* [수정됨] 사진 업로드 UI */}
-                <div className="mb-4">
-                  <label className="block text-sm font-bold text-gray-700 mb-2">사진 업로드</label>
-                  <div className="flex items-center gap-3">
-                    <label className={`cursor-pointer border border-gray-300 px-4 py-2 rounded-lg font-medium flex items-center gap-2 shadow-sm transition ${isUploading ? 'bg-gray-100 text-gray-400' : 'bg-white hover:bg-gray-50 text-gray-700'}`}>
-                      <ImageIcon size={18} />
-                      {isUploading ? "업로드 중..." : "📷 사진 선택"}
-                      <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} disabled={isUploading} />
-                    </label>
-                    {imageUrl && <span className="text-sm text-green-600 font-bold">✅ 준비 완료!</span>}
-                  </div>
-                  {imageUrl && <div className="mt-3"><img src={imageUrl} alt="미리보기" className="w-40 h-auto rounded-lg border shadow-sm" /></div>}
-                </div>
-
-                <button onClick={() => handleSave("news")} disabled={isUploading} className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition flex justify-center items-center gap-2">
-                  <Save size={18} /> 뉴스 등록하기
-                </button>
+                <input type="text" placeholder="제목" className="w-full p-3 border rounded-lg mb-3" value={inputTitle} onChange={(e) => setInputTitle(e.target.value)} />
+                <textarea placeholder="내용" className="w-full p-3 border rounded-lg h-32 mb-3" value={inputContent} onChange={(e) => setInputContent(e.target.value)} />
+                <UploadUI />
+                <button onClick={() => handleSave("news")} disabled={isUploading} className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 flex justify-center items-center gap-2"><Save size={18} /> 뉴스 등록하기</button>
               </div>
-
-              {/* 리스트 표시 */}
               <div className="space-y-4">
                 {newsList.map((item) => (
                   <div key={item.id} className="border p-5 rounded-xl flex justify-between items-start hover:bg-gray-50">
                     <div className="flex gap-4">
-                      {item.thumbnail && <img src={item.thumbnail} className="w-20 h-16 object-cover rounded-lg border" alt="thumb" />}
+                      {item.thumbnail && (
+                        item.fileType === 'video' ? 
+                        <div className="w-20 h-16 bg-black rounded-lg flex items-center justify-center text-white"><Video size={24}/></div> :
+                        <img src={item.thumbnail} className="w-20 h-16 object-cover rounded-lg border" alt="thumb" />
+                      )}
                       <div>
-                        <span className="inline-block bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded font-bold mb-1 mr-2">{item.category || "공지"}</span>
+                        <span className="inline-block bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded font-bold mb-1 mr-2">{item.category}</span>
                         <h3 className="font-bold text-gray-800">{item.title}</h3>
                         <p className="text-xs text-gray-400 mt-1">{item.date}</p>
                       </div>
@@ -171,37 +182,39 @@ export default function AdminPage() {
               </div>
             </div>
           )}
-          
-          {/* 다른 탭들 (기존 기능 유지) */}
+
+          {/* 이용안내 탭 */}
           {activeTab === "guide" && (
             <div>
-              <h2 className="text-xl font-bold mb-6 text-gray-800 border-b pb-2">거래 방법(Tip) 작성</h2>
+              <h2 className="text-xl font-bold mb-6 border-b pb-2">거래 방법(이용안내) 작성</h2>
               <div className="bg-gray-50 p-5 rounded-xl mb-8 border border-gray-200">
                 <input type="text" placeholder="팁 제목" className="w-full p-3 border rounded-lg mb-3" value={inputTitle} onChange={(e) => setInputTitle(e.target.value)} />
                 <textarea placeholder="상세 내용" className="w-full p-3 border rounded-lg h-32 mb-3" value={inputContent} onChange={(e) => setInputContent(e.target.value)} />
-                <button onClick={() => handleSave("tips")} className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 flex justify-center items-center gap-2"><Plus size={18} /> 가이드 등록하기</button>
+                <UploadUI />
+                <button onClick={() => handleSave("tips")} disabled={isUploading} className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 flex justify-center items-center gap-2"><Plus size={18} /> 가이드 등록하기</button>
               </div>
               <div className="space-y-4">
                 {tipsList.map((item) => (
-                  <div key={item.id} className="border p-5 rounded-xl flex justify-between items-start hover:bg-gray-50"><div><h3 className="font-bold text-gray-800 text-lg">💡 {item.title}</h3><p className="text-gray-600 mt-1">{item.content}</p></div><button onClick={() => handleDelete("tips", item.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><Trash2 size={20} /></button></div>
+                  <div key={item.id} className="border p-5 rounded-xl flex justify-between items-start hover:bg-gray-50">
+                    <div className="flex gap-4">
+                       {item.thumbnail && (
+                        item.fileType === 'video' ? 
+                        <div className="w-20 h-16 bg-black rounded-lg flex items-center justify-center text-white"><Video size={24}/></div> :
+                        <img src={item.thumbnail} className="w-20 h-16 object-cover rounded-lg border" alt="thumb" />
+                      )}
+                      <div><h3 className="font-bold text-gray-800">{item.title}</h3><p className="text-gray-600 mt-1 line-clamp-1">{item.content}</p></div>
+                    </div>
+                    <button onClick={() => handleDelete("tips", item.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><Trash2 size={20} /></button>
+                  </div>
                 ))}
               </div>
             </div>
           )}
 
-          {activeTab === "reviews" && (
-            <div>
-              <h2 className="text-xl font-bold mb-6 border-b pb-2">유저 후기 관리</h2>
-              <table className="w-full text-left border-collapse">
-                <thead><tr className="bg-gray-100 border-b"><th className="py-3 px-4 text-gray-600">작성자/서버</th><th className="py-3 px-4 text-gray-600">내용</th><th className="py-3 px-4 text-gray-600">날짜</th><th className="py-3 px-4 text-gray-600 w-20">관리</th></tr></thead>
-                <tbody>{reviewsList.map((review) => (<tr key={review.id} className="border-b hover:bg-gray-50"><td className="py-3 px-4 font-bold text-gray-700">{review.name}<br/><span className="text-xs text-blue-500 bg-blue-50 px-2 py-0.5 rounded">{review.server}</span></td><td className="py-3 px-4 text-gray-600 max-w-xs">{review.content}</td><td className="py-3 px-4 text-sm text-gray-400">{review.date}</td><td className="py-3 px-4"><button onClick={() => handleDelete("reviews", review.id)} className="text-red-500 hover:text-red-700 p-2"><Trash2 size={18} /></button></td></tr>))}</tbody>
-              </table>
-            </div>
+           {activeTab === "reviews" && (
+            <div><h2 className="text-xl font-bold mb-6 border-b pb-2">유저 후기 관리</h2><table className="w-full text-left border-collapse"><thead><tr className="bg-gray-100 border-b"><th className="py-3 px-4">작성자</th><th className="py-3 px-4">내용</th><th className="py-3 px-4">날짜</th><th className="py-3 px-4">관리</th></tr></thead><tbody>{reviewsList.map((review) => (<tr key={review.id} className="border-b"><td className="py-3 px-4 font-bold">{review.name}</td><td className="py-3 px-4 text-gray-600">{review.content}</td><td className="py-3 px-4 text-sm text-gray-400">{review.date}</td><td className="py-3 px-4"><button onClick={() => handleDelete("reviews", review.id)} className="text-red-500"><Trash2 size={18} /></button></td></tr>))}</tbody></table></div>
           )}
-
-          {activeTab === "main" && (
-            <div><h2 className="text-xl font-bold mb-6 border-b pb-2">메인 페이지 관리</h2><div className="bg-yellow-50 p-4 rounded-lg text-yellow-800 text-sm mb-6">🚧 배너 이미지 업로드 준비 중</div></div>
-          )}
+          {activeTab === "main" && (<div><h2 className="text-xl font-bold mb-6 border-b pb-2">메인 관리</h2><div className="bg-yellow-50 p-4 text-yellow-800">🚧 준비 중</div></div>)}
         </div>
       </div>
     </div>
