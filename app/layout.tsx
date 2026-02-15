@@ -6,16 +6,23 @@ import { Search, Menu, User } from "lucide-react";
 
 const inter = Inter({ subsets: ["latin"] });
 
-// --- [변경됨] 네이버/구글 검색 최적화(SEO) 설정 ---
+// --- [수정됨] 이름 "메이플급처템"으로 완벽 통일 ---
 export const metadata: Metadata = {
-  title: "메이플급처 - 신속하고 안전한 아이템 거래소", 
+  // 1. 인터넷 탭 & 검색 결과 제목
+  title: "메이플급처템 - 신속하고 안전한 아이템 거래소", 
+  
+  // 2. 검색 결과 설명 (키워드 포함)
   description: "메이플 급처템, 메이플 아이템, 메소 매입/매매 전문. 장사꾼보다 좋은 조건으로 빠르고 안전하게 거래하세요.",
+  
+  // 3. 검색 로봇용 키워드
   keywords: "메이플 급처템, 메이플 아이템, 메소, 메이플 장사꾼, 아이템 매입, 급처템 판매",
+  
+  // 4. 카톡/디스코드 공유 시 뜨는 미리보기 설정
   openGraph: {
-    title: "메이플급처 - 실시간 아이템 거래소",
+    title: "메이플급처템 - 실시간 아이템 거래소", // 공유 제목
     description: "메이플 급처템, 메소 거래는 여기서! 24시간 안전하게 상담 가능합니다.",
     url: "https://메이플급처템.com",
-    siteName: "메이플급처",
+    siteName: "메이플급처템", // 사이트 이름
     locale: "ko_KR",
     type: "website",
   },
@@ -34,7 +41,7 @@ export default function RootLayout({
     <html lang="ko">
       <body className={`${inter.className} min-h-screen flex flex-col`}>
         
-        {/* --- 헤더 시작 (사장님 기존 디자인 유지) --- */}
+        {/* --- 헤더 시작 --- */}
         <header className="border-b border-gray-200 bg-white sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
             
@@ -43,7 +50,7 @@ export default function RootLayout({
               <Menu className="w-6 h-6" />
             </div>
 
-            {/* 로고 (기존 메이플급처템.com 유지) */}
+            {/* 로고: "메이플급처템.com" (디자인 유지) */}
             <Link href="/" className="text-2xl font-black text-gray-900 tracking-tighter">
               메이플<span className="text-blue-600">급처템</span>.com
             </Link>
@@ -83,7 +90,7 @@ export default function RootLayout({
           {children}
         </main>
 
-        {/* --- 푸터 시작 (기존 문구 유지) --- */}
+        {/* --- 푸터 시작 --- */}
         <footer className="bg-gray-900 text-gray-400 py-10 text-center text-sm">
           <p>COPYRIGHT © 메이플급처템.com ALL RIGHTS RESERVED.</p>
         </footer>
