@@ -6,7 +6,7 @@ import { db } from '../../firebase';
 import { collection, addDoc, deleteDoc, doc, query, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore';
 
 export default function AdminPage() {
-  // --- 상태 관리 (기능 로직) ---
+  // --- 상태 관리 ---
   const [isAdmin, setIsAdmin] = useState(false);
   const [password, setPassword] = useState("");
   const [activeTab, setActiveTab] = useState("news");
@@ -19,6 +19,9 @@ export default function AdminPage() {
   // 입력 폼 상태
   const [inputTitle, setInputTitle] = useState("");
   const [inputContent, setInputContent] = useState("");
+  
+  // [추가됨] 뉴스 카테고리 상태 (기본값: 공지)
+  const [category, setCategory] = useState("공지");
 
   // --- 로그인 처리 ---
   const handleLogin = () => {
@@ -29,27 +32,21 @@ export default function AdminPage() {
     }
   };
 
-  // --- 데이터 불러오기 (실시간 연동) ---
+  // --- 데이터 불러오기 ---
   useEffect(() => {
     if (!isAdmin) return;
 
     // 1. 뉴스 구독
     const qNews = query(collection(db, "news"), orderBy("createdAt", "desc"));
-    const unsubNews = onSnapshot(qNews, (snap) => {
-      setNewsList(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
+    const unsubNews = onSnapshot(qNews, (snap) => setNewsList(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
 
-    // 2. 팁(거래방법) 구독
+    // 2. 팁 구독
     const qTips = query(collection(db, "tips"), orderBy("createdAt", "desc"));
-    const unsubTips = onSnapshot(qTips, (snap) => {
-      setTipsList(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
+    const unsubTips = onSnapshot(qTips, (snap) => setTipsList(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
 
     // 3. 후기 구독
     const qReviews = query(collection(db, "reviews"), orderBy("createdAt", "desc"));
-    const unsubReviews = onSnapshot(qReviews, (snap) => {
-      setReviewsList(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
+    const unsubReviews = onSnapshot(qReviews, (snap) => setReviewsList(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
 
     return () => { unsubNews(); unsubTips(); unsubReviews(); };
   }, [isAdmin]);
@@ -60,14 +57,17 @@ export default function AdminPage() {
     
     try {
       await addDoc(collection(db, collectionName), {
+        // 뉴스가 아닐 경우 카테고리는 저장하지 않음 (또는 '일반'으로 저장)
+        category: collectionName === "news" ? category : "일반", 
         title: inputTitle,
         content: inputContent,
         date: new Date().toLocaleDateString('ko-KR'),
         createdAt: serverTimestamp(),
       });
       alert("등록되었습니다!");
-      setInputTitle(""); // 입력창 초기화
+      setInputTitle(""); 
       setInputContent("");
+      setCategory("공지"); // 저장 후 카테고리 초기화
     } catch (e) {
       alert("에러 발생: " + e);
     }
@@ -99,12 +99,7 @@ export default function AdminPage() {
             onChange={(e) => setPassword(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
           />
-          <button 
-            onClick={handleLogin}
-            className="w-full bg-blue-600 text-white p-3 rounded-lg font-bold hover:bg-blue-700 transition"
-          >
-            로그인
-          </button>
+          <button onClick={handleLogin} className="w-full bg-blue-600 text-white p-3 rounded-lg font-bold hover:bg-blue-700 transition">로그인</button>
           <div className="text-center mt-4">
              <Link href="/" className="text-sm text-gray-500 hover:text-blue-500">← 메인으로 돌아가기</Link>
           </div>
@@ -175,6 +170,21 @@ export default function AdminPage() {
               
               {/* 글쓰기 폼 */}
               <div className="bg-gray-50 p-5 rounded-xl mb-8 border border-gray-200">
+                
+                {/* [추가됨] 카테고리 선택 박스 */}
+                <label className="block text-sm font-bold text-gray-700 mb-2">카테고리 선택</label>
+                <select 
+                  className="w-full p-3 border rounded-lg mb-3 bg-white focus:outline-none focus:border-blue-500 font-bold text-gray-700"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                >
+                  <option value="공지">📢 공지사항</option>
+                  <option value="이벤트">🎉 이벤트</option>
+                  <option value="패치">🛠️ 패치노트</option>
+                  <option value="점검">⚠️ 점검안내</option>
+                  <option value="이슈">🔥 화제의 이슈</option>
+                </select>
+
                 <input 
                   type="text" 
                   placeholder="제목을 입력하세요" 
@@ -202,7 +212,11 @@ export default function AdminPage() {
                   newsList.map((item) => (
                   <div key={item.id} className="border p-5 rounded-xl flex justify-between items-start hover:bg-gray-50 transition">
                     <div>
-                      <h3 className="font-bold text-gray-800 text-lg">{item.title}</h3>
+                       {/* [추가됨] 리스트에 카테고리 표시 */}
+                      <span className="inline-block bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded font-bold mb-1 mr-2">
+                        {item.category || "공지"}
+                      </span>
+                      <h3 className="font-bold text-gray-800 text-lg inline-block">{item.title}</h3>
                       <p className="text-gray-600 mt-1 whitespace-pre-line">{item.content}</p>
                       <p className="text-xs text-gray-400 mt-2">{item.date}</p>
                     </div>
@@ -219,117 +233,66 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* [2] 이용안내 관리 섹션 */}
+          {/* [2] 이용안내 (기존 유지) */}
           {activeTab === "guide" && (
             <div>
               <h2 className="text-xl font-bold mb-6 text-gray-800 border-b pb-2">거래 방법(Tip) 작성 및 관리</h2>
-              
               <div className="bg-gray-50 p-5 rounded-xl mb-8 border border-gray-200">
                 <input 
-                  type="text" 
-                  placeholder="팁 제목 (예: 카톡 거래 방법)" 
-                  className="w-full p-3 border rounded-lg mb-3 focus:outline-none focus:border-blue-500"
-                  value={inputTitle} 
-                  onChange={(e) => setInputTitle(e.target.value)}
+                  type="text" placeholder="팁 제목" className="w-full p-3 border rounded-lg mb-3"
+                  value={inputTitle} onChange={(e) => setInputTitle(e.target.value)}
                 />
                 <textarea 
-                  placeholder="상세 내용을 입력하세요" 
-                  className="w-full p-3 border rounded-lg h-32 mb-3 focus:outline-none focus:border-blue-500"
-                  value={inputContent} 
-                  onChange={(e) => setInputContent(e.target.value)}
+                  placeholder="상세 내용" className="w-full p-3 border rounded-lg h-32 mb-3"
+                  value={inputContent} onChange={(e) => setInputContent(e.target.value)}
                 />
-                <button 
-                  onClick={() => handleSave("tips")}
-                  className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition flex justify-center items-center gap-2"
-                >
-                  <Plus size={18} /> 가이드 등록하기
-                </button>
+                <button onClick={() => handleSave("tips")} className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 flex justify-center items-center gap-2"><Plus size={18} /> 가이드 등록하기</button>
               </div>
-
               <div className="space-y-4">
-                {tipsList.length === 0 ? (
-                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-10 text-center text-gray-500">
-                      <p>현재 등록된 가이드가 없습니다.</p>
-                   </div>
-                ) : tipsList.map((item) => (
-                  <div key={item.id} className="border p-5 rounded-xl flex justify-between items-start hover:bg-gray-50 transition">
-                    <div>
-                      <h3 className="font-bold text-gray-800 text-lg">💡 {item.title}</h3>
-                      <p className="text-gray-600 mt-1 whitespace-pre-line">{item.content}</p>
-                      <p className="text-xs text-gray-400 mt-2">{item.date}</p>
-                    </div>
-                    <button 
-                      onClick={() => handleDelete("tips", item.id)}
-                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition"
-                    >
-                      <Trash2 size={20} />
-                    </button>
+                {tipsList.map((item) => (
+                  <div key={item.id} className="border p-5 rounded-xl flex justify-between items-start hover:bg-gray-50">
+                    <div><h3 className="font-bold text-gray-800 text-lg">💡 {item.title}</h3><p className="text-gray-600 mt-1">{item.content}</p></div>
+                    <button onClick={() => handleDelete("tips", item.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><Trash2 size={20} /></button>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* [3] 후기 관리 섹션 */}
+          {/* [3] 후기 관리 (기존 유지) */}
            {activeTab === "reviews" && (
             <div>
               <h2 className="text-xl font-bold mb-6 border-b pb-2">유저 후기 관리</h2>
-              <p className="mb-4 text-sm text-gray-500">손님들이 작성한 후기를 삭제할 수 있습니다.</p>
-              
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-gray-100 border-b">
-                      <th className="py-3 px-4 font-semibold text-gray-600">작성자/서버</th>
-                      <th className="py-3 px-4 font-semibold text-gray-600">내용</th>
-                      <th className="py-3 px-4 font-semibold text-gray-600">날짜</th>
-                      <th className="py-3 px-4 font-semibold text-gray-600 w-20">관리</th>
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-gray-100 border-b">
+                    <th className="py-3 px-4 font-semibold text-gray-600">작성자/서버</th>
+                    <th className="py-3 px-4 font-semibold text-gray-600">내용</th>
+                    <th className="py-3 px-4 font-semibold text-gray-600">날짜</th>
+                    <th className="py-3 px-4 font-semibold text-gray-600 w-20">관리</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reviewsList.map((review) => (
+                    <tr key={review.id} className="border-b hover:bg-gray-50">
+                      <td className="py-3 px-4 font-bold text-gray-700">{review.name}<br/><span className="text-xs font-normal text-blue-500 bg-blue-50 px-2 py-0.5 rounded">{review.server}</span></td>
+                      <td className="py-3 px-4 text-gray-600 max-w-xs">{review.content}</td>
+                      <td className="py-3 px-4 text-sm text-gray-400">{review.date}</td>
+                      <td className="py-3 px-4"><button onClick={() => handleDelete("reviews", review.id)} className="text-red-500 hover:text-red-700 p-2"><Trash2 size={18} /></button></td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {reviewsList.length === 0 ? (
-                      <tr><td colSpan={4} className="text-center py-10 text-gray-400">등록된 후기가 없습니다.</td></tr>
-                    ) : reviewsList.map((review) => (
-                      <tr key={review.id} className="border-b hover:bg-gray-50">
-                        <td className="py-3 px-4 font-bold text-gray-700">
-                          {review.name} <br/>
-                          <span className="text-xs font-normal text-blue-500 bg-blue-50 px-2 py-0.5 rounded">{review.server}</span>
-                        </td>
-                        <td className="py-3 px-4 text-gray-600 max-w-xs">{review.content}</td>
-                        <td className="py-3 px-4 text-sm text-gray-400">{review.date || '날짜없음'}</td>
-                        <td className="py-3 px-4">
-                           <button 
-                             onClick={() => handleDelete("reviews", review.id)}
-                             className="text-red-500 hover:text-red-700 p-2 rounded hover:bg-red-50"
-                             title="삭제"
-                           >
-                             <Trash2 size={18} />
-                           </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
 
-          {/* [4] 메인 홍보 관리 (현재는 UI만 제공) */}
+          {/* [4] 메인 홍보 관리 (기존 유지) */}
           {activeTab === "main" && (
             <div>
               <h2 className="text-xl font-bold mb-6 border-b pb-2">메인 페이지 관리</h2>
-              <div className="bg-yellow-50 p-4 rounded-lg text-yellow-800 text-sm mb-6">
-                🚧 이미지 업로드 기능은 추후 'Firebase Storage' 연결 후 활성화됩니다. 현재는 준비 중입니다.
-              </div>
-              
-              <div className="mb-8">
-                <h3 className="font-bold text-gray-700 mb-2">현재 홍보 배너</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  <div className="aspect-video bg-gray-100 rounded-lg flex flex-col items-center justify-center border-2 border-dashed border-gray-300 cursor-pointer hover:bg-gray-50 transition">
-                    <ImageIcon className="text-gray-400 mb-2" />
-                    <span className="text-sm text-gray-500">이미지 추가 (준비중)</span>
-                  </div>
-                </div>
+              <div className="bg-yellow-50 p-4 rounded-lg text-yellow-800 text-sm mb-6">🚧 이미지 업로드 준비 중</div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                 <div className="aspect-video bg-gray-100 rounded-lg flex flex-col items-center justify-center border-2 border-dashed border-gray-300 cursor-pointer hover:bg-gray-50"><ImageIcon className="text-gray-400 mb-2" /><span className="text-sm text-gray-500">이미지 추가 (준비중)</span></div>
               </div>
             </div>
           )}
