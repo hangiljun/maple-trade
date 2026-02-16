@@ -1,112 +1,284 @@
-import type { Metadata } from "next";
+import React from "react";
 import Link from "next/link";
+import Image from "next/image"; // ✅ 이미지 최적화를 위해 추가
+import { 
+  ShieldCheck, Zap, TrendingUp, Star, 
+  MessageCircle, FileText, ArrowRight, CheckCircle, Bell, Lightbulb
+} from "lucide-react";
+import { db } from '../firebase'; 
+import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
+import FaqSection from "@/app/components/FaqSection"; 
+import type { Metadata } from "next";
 
+// ✅ [핵심 1] 배포 시 최신 글이 안 보이는 문제 방지 (서버 사이드 렌더링 강제)
+export const dynamic = "force-dynamic";
+
+// 📝 [SEO] 메타데이터
 export const metadata: Metadata = {
-  title: "메이플스토리 아이템/메소 안전거래",
-  description:
-    "메이플스토리 아이템 및 메소 최고가 매입, 최저가 판매. 전 서버 24시간 안전거래.",
+  title: "메이플급처 - 안전하고 빠른 메이플스토리 아이템/메소 거래소",
+  description: "스카니아, 루나, 엘리시움, 크로아 전 서버 메소 및 아이템 최고가 매입, 최저가 판매. 24시간 실시간 시세 확인 및 즉시 거래 가능.",
+  keywords: ["메이플급처", "메이플메소", "메이플급처템", "메이플스토리 메소", "메이플 아이템 판매", "스카니아 메소", "루나 메소"],
   alternates: {
-    canonical: "https://www.xn--kj0b36u99jp4ed8l.com",
+    canonical: "https://www.메이플급처.com", // ✅ [추천] 대표 도메인 설정 (SEO 점수 UP)
   },
 };
 
-export default function HomePage() {
+// 🛡️ [데이터 설계도]
+interface Review {
+  id: string;
+  title: string;
+  content: string;
+  author: string;
+  date: string;
+  server?: string;
+}
+
+interface Tip {
+  id: string;
+  title: string;
+  content: string;
+  date: string;
+  thumbnail?: string;
+}
+
+export default async function Home() {
+  const KAKAO_LINK = "https://open.kakao.com/o/sKg86b7f";
+  
+  let recentReviews: Review[] = [];
+  let recentTips: Tip[] = [];
+
+  try {
+    // ✅ [핵심 3] createdAt이 없는 문서가 있어도 에러 안 나게 안전장치
+    // 1. 후기 가져오기
+    const reviewRef = collection(db, "reviews");
+    const reviewQ = query(reviewRef, orderBy("createdAt", "desc"), limit(4));
+    const reviewSnap = await getDocs(reviewQ);
+    recentReviews = reviewSnap.docs.map(doc => ({ 
+      id: doc.id, 
+      ...doc.data() 
+    } as Review));
+
+    // 2. 팁/공지 가져오기
+    const tipRef = collection(db, "tips");
+    const tipQ = query(tipRef, orderBy("createdAt", "desc"), limit(3));
+    const tipSnap = await getDocs(tipQ);
+    recentTips = tipSnap.docs.map(doc => ({ 
+      id: doc.id, 
+      ...doc.data() 
+    } as Tip));
+
+  } catch (e) {
+    // 에러 발생 시 콘솔에만 찍고, 사용자에겐 빈 목록을 보여줌 (페이지 터짐 방지)
+    console.error("🔥 데이터 로딩 에러:", e);
+  }
+
   return (
-    <div className="max-w-6xl mx-auto px-4 py-16">
-      {/* 히어로 섹션 */}
-      <section className="text-center mb-20">
-        <h1 className="text-4xl md:text-5xl font-black text-gray-900 leading-tight">
-          메이플스토리 아이템
-          <br />
-          <span className="text-blue-600">안전거래 플랫폼</span>
-        </h1>
+    <div className="flex flex-col gap-12 pb-20">
+       
+      {/* 1. 홍보 배너 */}
+      <section className="bg-gradient-to-r from-blue-600 to-indigo-700 py-20 text-center text-white relative overflow-hidden">
+        {/* 배경 효과 */}
+        <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-400/10 rounded-full translate-x-1/3 translate-y-1/3 blur-3xl pointer-events-none"></div>
 
-        <p className="mt-6 text-gray-600 text-lg">
-          24시간 빠른 거래 · 전 서버 가능 · 안전 보장
-        </p>
+        <div className="max-w-4xl mx-auto px-4 relative z-10 animate-fade-in-up">
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">
+            메이플스토리 급처템 <br/> 가장 안전하고 빠르게 정리하세요
+          </h1>
+          <p className="text-blue-100 mb-8 text-lg">
+            실시간 경매장 매물로 시세 측정 합니다.
+          </p>
+           
+          <div className="inline-block border-4 border-pink-500 rounded-xl p-4 bg-black/50 backdrop-blur-sm mb-10">
+            <p className="neon-text text-xl md:text-2xl font-mono">
+              365일 24시간 메이플 거래 대기중
+            </p>
+          </div>
 
-        <div className="mt-8 flex justify-center gap-4">
-          <a
-            href="https://open.kakao.com/o/sKg86b7f"
-            target="_blank"
-            rel="noreferrer"
-            className="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-3 rounded-xl shadow transition"
-          >
-            카카오톡 문의하기
-          </a>
+          <div className="flex flex-col sm:flex-row justify-center gap-3 w-full max-w-2xl mx-auto px-4">
+             <Link href="/tip" className="flex-1 bg-white text-blue-700 border-2 border-white px-4 py-3.5 rounded-full font-bold hover:bg-gray-100 transition shadow-lg flex items-center justify-center gap-2 text-sm md:text-base">
+               <FileText size={18} /> 거래 방법
+             </Link>
+             <Link href="/reviews" className="flex-1 bg-white/10 backdrop-blur-md border-2 border-white text-white px-4 py-3.5 rounded-full font-bold hover:bg-white/20 transition shadow-lg flex items-center justify-center gap-2 text-sm md:text-base">
+               <Star size={18} className="text-yellow-300 fill-yellow-300"/> 이용 후기
+             </Link>
+             <a 
+               href={KAKAO_LINK}
+               target="_blank"
+               rel="noreferrer"
+               className="flex-1 bg-[#FEE500] text-[#3A1D1D] border-2 border-[#FEE500] px-4 py-3.5 rounded-full font-black hover:bg-yellow-400 transition shadow-xl flex items-center justify-center gap-2 transform hover:scale-105 text-sm md:text-base"
+             >
+               <MessageCircle size={18} fill="#3A1D1D" /> 카톡 문의
+             </a>
+          </div>
+        </div>
+      </section>
 
-          <Link
-            href="/news"
-            className="border border-gray-300 hover:bg-gray-100 px-6 py-3 rounded-xl font-bold transition"
-          >
-            메이플 이슈 보기
+      {/* 2. 약속 섹션 */}
+      <section className="max-w-7xl mx-auto px-4 w-full">
+        <div className="text-center mb-10">
+          <h2 className="text-2xl font-bold text-gray-800">우리의 약속</h2>
+          <div className="w-10 h-1 bg-blue-500 mx-auto mt-2"></div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center hover:-translate-y-1 transition duration-300">
+            <ShieldCheck size={40} className="mx-auto mb-4 text-blue-600"/>
+            <h3 className="text-xl font-bold mb-2 text-gray-800">무한한 신뢰</h3>
+            <p className="text-gray-500 leading-relaxed">모든 거래는 투명하게 공개되며<br/>본인 아이템만 취급합니다.</p>
+          </div>
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center hover:-translate-y-1 transition duration-300">
+            <Zap size={40} className="mx-auto mb-4 text-blue-600"/>
+            <h3 className="text-xl font-bold mb-2 text-gray-800">압도적 신속</h3>
+            <p className="text-gray-500 leading-relaxed">구매 문의 즉시 응답하며<br/>가장 빠른 거래를 보장합니다.</p>
+          </div>
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center hover:-translate-y-1 transition duration-300">
+            <TrendingUp size={40} className="mx-auto mb-4 text-blue-600"/>
+            <h3 className="text-xl font-bold mb-2 text-gray-800">정확한 시세</h3>
+            <p className="text-gray-500 leading-relaxed">실시간 경매장 시세 분석으로<br/>최고의 가격을 제안합니다.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. 특징 및 비교 섹션 */}
+      <section className="bg-white py-16 w-full border-y border-gray-100">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex flex-col lg:flex-row gap-12 items-center">
+            <div className="flex-1">
+              <h2 className="text-3xl font-bold mb-6 text-gray-900">왜 <span className="text-blue-600">메이플급처템</span>인가요?</h2>
+              <ul className="space-y-4">
+                {["수수료 0% 직거래 시스템", "실시간 더치트 조회", "24시간 대기 초고속 거래"].map((text, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <CheckCircle className="text-blue-500 mt-1 flex-shrink-0" />
+                    <strong className="text-lg text-gray-800">{text}</strong>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="flex-1 w-full">
+              <div className="border rounded-xl overflow-hidden shadow-lg">
+                <table className="w-full text-center">
+                  <thead className="bg-gray-50 border-b">
+                    <tr>
+                      <th className="py-4 text-gray-500 font-medium">구분</th>
+                      <th className="py-4 text-gray-400 font-medium">타 커뮤니티</th>
+                      <th className="py-4 text-blue-600 font-bold bg-blue-50">메이플급처템</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    <tr><td className="py-4 text-gray-600">속도</td><td className="text-gray-400">평균 3시간</td><td className="text-blue-600 font-bold">⚡ 평균 5분</td></tr>
+                    <tr><td className="py-4 text-gray-600">안전</td><td className="text-gray-400">개인 책임</td><td className="text-blue-600 font-bold">🛡️ 100% 보증</td></tr>
+                    <tr><td className="py-4 text-gray-600">시세</td><td className="text-gray-400">부정확함</td><td className="text-blue-600 font-bold">📊 실시간</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. 공지사항 섹션 */}
+      <section className="max-w-7xl mx-auto px-4 w-full">
+        <div className="flex justify-between items-end mb-6">
+          <div>
+            <span className="text-blue-600 font-bold text-sm tracking-wider flex items-center gap-1 mb-1">
+              <Bell size={14} /> NOTICE & TIPS
+            </span>
+            <h2 className="text-2xl font-bold text-gray-900">이용 팁 & 공지사항</h2>
+          </div>
+          <Link href="/tip" className="text-sm font-bold text-gray-500 hover:text-blue-600 flex items-center gap-1">
+            전체보기 <ArrowRight size={14}/>
           </Link>
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {recentTips.length === 0 ? (
+            <div className="col-span-full text-center py-12 bg-gray-50 rounded-2xl border border-dashed border-gray-200 text-gray-400">
+              현재 등록된 공지사항이 없습니다.
+            </div>
+          ) : (
+            recentTips.map((tip) => (
+              <div key={tip.id} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition cursor-pointer flex flex-col h-full">
+                <div className="h-40 bg-gray-100 relative overflow-hidden">
+                  {tip.thumbnail ? (
+                    // ✅ [핵심 2] next/image로 변경하여 로딩 속도 향상
+                    <Image 
+                      src={tip.thumbnail} 
+                      alt={tip.title} 
+                      fill 
+                      className="object-cover group-hover:scale-105 transition duration-500"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-blue-50 text-blue-200">
+                      <Lightbulb size={48} />
+                    </div>
+                  )}
+                  <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded z-10">
+                    공지
+                  </div>
+                </div>
+                <div className="p-5 flex-1 flex flex-col">
+                  <h3 className="font-bold text-lg text-gray-800 mb-2 line-clamp-1 group-hover:text-blue-600 transition">
+                    {tip.title}
+                  </h3>
+                  <p className="text-gray-500 text-sm line-clamp-2 mb-4 flex-1">
+                    {tip.content}
+                  </p>
+                  <div className="pt-4 border-t border-gray-50 text-xs text-gray-400 flex justify-between items-center">
+                    <span>관리자</span>
+                    <span>{tip.date}</span>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </section>
 
-      {/* 특징 섹션 */}
-      <section className="grid md:grid-cols-3 gap-6 mb-20">
-        <div className="bg-white rounded-2xl shadow p-6 text-center">
-          <h3 className="font-bold text-lg mb-2">⚡ 빠른 거래</h3>
-          <p className="text-gray-500 text-sm">
-            평균 5~10분 내 거래 완료
-          </p>
-        </div>
-
-        <div className="bg-white rounded-2xl shadow p-6 text-center">
-          <h3 className="font-bold text-lg mb-2">🔒 안전 보장</h3>
-          <p className="text-gray-500 text-sm">
-            사기 걱정 없는 안전 거래 시스템
-          </p>
-        </div>
-
-        <div className="bg-white rounded-2xl shadow p-6 text-center">
-          <h3 className="font-bold text-lg mb-2">💰 최고가 매입</h3>
-          <p className="text-gray-500 text-sm">
-            실시간 시세 반영 최고가 보장
-          </p>
-        </div>
-      </section>
-
-      {/* 이용 안내 */}
-      <section className="bg-white rounded-2xl shadow p-10 text-center mb-20">
-        <h2 className="text-2xl font-bold mb-6">
-          거래 방법 안내
-        </h2>
-
-        <div className="grid md:grid-cols-3 gap-6 text-sm text-gray-600">
+      {/* 5. 후기 섹션 */}
+      <section className="max-w-7xl mx-auto px-4 w-full mb-10">
+        <div className="flex justify-between items-end mb-8 border-b border-gray-200 pb-4">
           <div>
-            <div className="text-xl font-bold mb-2">1️⃣ 문의</div>
-            카카오톡으로 아이템/메소 문의
+            <h2 className="text-2xl font-bold text-gray-900">최근 거래 후기</h2>
+            <p className="text-sm text-gray-500 mt-1">유저분들이 직접 남겨주신 실시간 후기입니다.</p>
           </div>
-
-          <div>
-            <div className="text-xl font-bold mb-2">2️⃣ 시세 확인</div>
-            실시간 시세 안내 및 거래 확정
-          </div>
-
-          <div>
-            <div className="text-xl font-bold mb-2">3️⃣ 안전 거래</div>
-            빠르고 안전하게 거래 완료
-          </div>
+          <Link href="/reviews" className="text-sm font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 hover:underline">
+            더보기 <ArrowRight size={14}/>
+          </Link>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+          {recentReviews.length === 0 ? (
+            <div className="col-span-full text-center py-10 text-gray-400 border border-dashed rounded-xl">
+              아직 등록된 후기가 없습니다.
+            </div>
+          ) : (
+            recentReviews.map((review) => (
+              <div key={review.id} className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition cursor-pointer hover:-translate-y-1">
+                <div className="flex justify-between items-start mb-3">
+                    <div className="flex text-yellow-400">
+                      {[1,2,3,4,5].map(star => <Star key={star} size={12} fill="currentColor" />)}
+                    </div>
+                    <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded font-bold border border-blue-100">
+                      {review.server || "전서버"}
+                    </span>
+                </div>
+                <p className="text-gray-800 text-sm font-bold mb-2 truncate">{review.title}</p>
+                <p className="text-gray-500 text-xs line-clamp-2 h-9 leading-relaxed mb-3">
+                  "{review.content}"
+                </p>
+                <div className="text-[10px] text-gray-400 flex justify-between border-t border-gray-50 pt-3">
+                  <span className="font-medium text-gray-500">{review.author}</span>
+                  <span>{review.date}</span>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </section>
 
-      {/* 하단 CTA */}
-      <section className="text-center">
-        <h2 className="text-2xl font-black mb-6">
-          지금 바로 안전하게 거래하세요
-        </h2>
+      {/* 6. FAQ (클라이언트 컴포넌트) */}
+      <FaqSection />
 
-        <a
-          href="https://open.kakao.com/o/sKg86b7f"
-          target="_blank"
-          rel="noreferrer"
-          className="inline-block bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-4 rounded-2xl shadow transition"
-        >
-          24시간 상담하기
-        </a>
-      </section>
     </div>
   );
 }
