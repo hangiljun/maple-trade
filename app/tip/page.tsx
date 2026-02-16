@@ -18,16 +18,20 @@ export default function TipPage() {
   }, []);
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12 min-h-screen">
+    // ✅ div 대신 main 태그를 써야 검색엔진이 좋아합니다.
+    <main className="max-w-4xl mx-auto px-4 py-12 min-h-screen">
       
-      {/* 1. 상단 고정 가이드 (사장님의 예쁜 UI 복구) */}
+      {/* 1. 상단 고정 가이드 */}
       <div className="text-center mb-16">
-        <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">💡 이용안내 & 꿀팁</h1>
+        {/* ✅ [수정됨] Bing이 좋아하는 H1 태그! 텍스트를 명확하게 */}
+        <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">
+          이용안내 및 안전거래 꿀팁
+        </h1>
         <p className="text-gray-500 text-lg">메이플급처템에서 안전하고 빠르게 거래하는 방법입니다.</p>
       </div>
 
       {/* 판매자 가이드 섹션 */}
-      <div className="mb-20">
+      <section className="mb-20">
         <h2 className="text-2xl font-bold text-blue-600 mb-8 flex items-center gap-2">
           <span className="bg-blue-100 p-2 rounded-lg"><Gift className="w-6 h-6"/></span>
           아이템 판매 방법
@@ -61,10 +65,10 @@ export default function TipPage() {
             </p>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* 구매자 가이드 섹션 */}
-      <div className="mb-24">
+      <section className="mb-24">
         <h2 className="text-2xl font-bold text-green-600 mb-8 flex items-center gap-2">
           <span className="bg-green-100 p-2 rounded-lg"><CreditCard className="w-6 h-6"/></span>
           메소 구매 방법
@@ -99,12 +103,12 @@ export default function TipPage() {
                 </div>
             </div>
         </div>
-      </div>
+      </section>
 
       <div className="border-t-2 border-gray-100 my-16"></div>
 
-      {/* 2. 하단 게시판 영역 (관리자가 올린 글) */}
-      <div>
+      {/* 2. 하단 게시판 영역 */}
+      <section>
         <div className="text-center mb-10">
            <h2 className="text-2xl font-black text-gray-800 flex items-center justify-center gap-2">
              <FileText className="text-gray-400"/> 추가 이용 팁 & 공지
@@ -117,7 +121,7 @@ export default function TipPage() {
         ) : (
           <div className="space-y-8">
             {tipsList.map((item) => (
-              <div key={item.id} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition">
+              <article key={item.id} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition">
                 <div className="flex items-center gap-2 mb-4">
                   <span className="w-1.5 h-6 bg-purple-500 rounded-full"></span>
                   <h3 className="text-xl font-bold text-gray-800">{item.title}</h3>
@@ -129,7 +133,8 @@ export default function TipPage() {
                     {item.fileType === 'video' ? (
                       <video src={item.thumbnail} controls className="w-full max-h-[400px] object-contain mx-auto" />
                     ) : (
-                      <img src={item.thumbnail} alt="tip image" className="w-full max-h-[400px] object-contain mx-auto" />
+                      // ✅ [수정됨] alt 태그에 제목을 넣어줘야 이미지 검색에 뜹니다!
+                      <img src={item.thumbnail} alt={`메이플급처 꿀팁 - ${item.title}`} className="w-full max-h-[400px] object-contain mx-auto" />
                     )}
                   </div>
                 )}
@@ -140,17 +145,17 @@ export default function TipPage() {
                 <div className="text-right mt-3">
                   <span className="text-xs text-gray-400 font-medium">{item.date} 작성됨</span>
                 </div>
-              </div>
+              </article>
             ))}
           </div>
         )}
-      </div>
+      </section>
 
       <div className="mt-20 text-center">
         <Link href="/" className="inline-block bg-gray-900 text-white px-8 py-4 rounded-full font-bold hover:bg-gray-800 transition shadow-lg hover:shadow-xl transform hover:-translate-y-1">
           🏠 메인으로 돌아가기
         </Link>
       </div>
-    </div>
+    </main>
   );
 }
