@@ -79,7 +79,7 @@ export default function Home() {
           
           <div className="inline-block border-4 border-pink-500 rounded-xl p-4 bg-black/50 backdrop-blur-sm mb-10">
             <p className="neon-text text-xl md:text-2xl font-mono">
-              카카오톡 ID : HAN8246 친구추가 후 연락!
+              365일 24시간 메이플 거래 대기중
             </p>
           </div>
 
