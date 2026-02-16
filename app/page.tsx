@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { 
   ShieldCheck, Zap, TrendingUp, Star, 
-  MessageCircle, FileText, ArrowRight, CheckCircle 
+  MessageCircle, FileText, ArrowRight, CheckCircle, Bell, Lightbulb 
 } from "lucide-react";
 import { db } from '../firebase'; 
 import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
@@ -11,19 +11,26 @@ import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
 export default function Home() {
   const KAKAO_LINK = "https://open.kakao.com/o/sKg86b7f";
   const [recentReviews, setRecentReviews] = useState<any[]>([]);
+  const [recentTips, setRecentTips] = useState<any[]>([]); // ✅ 팁/공지 데이터 상태
 
   useEffect(() => {
-    const fetchRecent = async () => {
+    const fetchData = async () => {
       try {
-        const q = query(collection(db, "reviews"), orderBy("createdAt", "desc"), limit(4));
-        const snap = await getDocs(q);
-        const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setRecentReviews(data);
+        // 1. 최근 후기 4개 가져오기
+        const reviewQ = query(collection(db, "reviews"), orderBy("createdAt", "desc"), limit(4));
+        const reviewSnap = await getDocs(reviewQ);
+        setRecentReviews(reviewSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
+        // 2. ✅ 최근 팁/공지 3개 가져오기 (관리자가 쓴 글)
+        const tipQ = query(collection(db, "tips"), orderBy("createdAt", "desc"), limit(3));
+        const tipSnap = await getDocs(tipQ);
+        setRecentTips(tipSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
       } catch (e) {
-        console.error("error", e);
+        console.error("데이터 로딩 실패", e);
       }
     };
-    fetchRecent();
+    fetchData();
   }, []);
 
   return (
@@ -48,19 +55,13 @@ export default function Home() {
             </p>
           </div>
 
-          {/* 👇 [수정됨] 버튼 디자인: 뚱뚱하지 않게 높이 줄임(py-3.5) + 완전 둥글게(rounded-full) */}
           <div className="flex flex-col sm:flex-row justify-center gap-3 w-full max-w-2xl mx-auto px-4">
-             {/* 1. 거래 방법 */}
              <Link href="/tip" className="flex-1 bg-white text-blue-700 border-2 border-white px-4 py-3.5 rounded-full font-bold hover:bg-gray-100 transition shadow-lg flex items-center justify-center gap-2 text-sm md:text-base">
                <FileText size={18} /> 거래 방법
              </Link>
-             
-             {/* 2. 리얼 후기 */}
              <Link href="/reviews" className="flex-1 bg-white/10 backdrop-blur-md border-2 border-white text-white px-4 py-3.5 rounded-full font-bold hover:bg-white/20 transition shadow-lg flex items-center justify-center gap-2 text-sm md:text-base">
                <Star size={18} className="text-yellow-300 fill-yellow-300"/> 리얼 후기
              </Link>
-             
-             {/* 3. 카톡 문의 */}
              <a 
                href={KAKAO_LINK}
                target="_blank"
@@ -113,7 +114,6 @@ export default function Home() {
                 ))}
               </ul>
             </div>
-            
             <div className="flex-1 w-full">
               <div className="border rounded-xl overflow-hidden shadow-lg">
                 <table className="w-full text-center">
@@ -136,7 +136,61 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 4. 이용후기 미리보기 (DB 연동) */}
+      {/* ✅ 4. [NEW] 이용 팁 & 공지사항 섹션 (관리자 작성글 연동) */}
+      <section className="max-w-7xl mx-auto px-4 w-full">
+        <div className="flex justify-between items-end mb-6">
+          <div>
+            <span className="text-blue-600 font-bold text-sm tracking-wider flex items-center gap-1 mb-1">
+              <Bell size={14} /> NOTICE & TIPS
+            </span>
+            <h2 className="text-2xl font-bold text-gray-900">이용 팁 & 공지사항</h2>
+          </div>
+          <Link href="/tip" className="text-sm font-bold text-gray-500 hover:text-blue-600 flex items-center gap-1">
+            전체보기 <ArrowRight size={14}/>
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {recentTips.length === 0 ? (
+            <div className="col-span-full text-center py-12 bg-gray-50 rounded-2xl border border-dashed border-gray-200 text-gray-400">
+              현재 등록된 공지사항이 없습니다.
+            </div>
+          ) : (
+            recentTips.map((tip) => (
+              <div key={tip.id} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition cursor-pointer flex flex-col h-full">
+                {/* 썸네일 영역 */}
+                <div className="h-40 bg-gray-100 relative overflow-hidden">
+                  {tip.thumbnail ? (
+                    <img src={tip.thumbnail} alt={tip.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500"/>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-blue-50 text-blue-200">
+                      <Lightbulb size={48} />
+                    </div>
+                  )}
+                  <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded">
+                    공지
+                  </div>
+                </div>
+                {/* 텍스트 영역 */}
+                <div className="p-5 flex-1 flex flex-col">
+                  <h3 className="font-bold text-lg text-gray-800 mb-2 line-clamp-1 group-hover:text-blue-600 transition">
+                    {tip.title}
+                  </h3>
+                  <p className="text-gray-500 text-sm line-clamp-2 mb-4 flex-1">
+                    {tip.content}
+                  </p>
+                  <div className="pt-4 border-t border-gray-50 text-xs text-gray-400 flex justify-between items-center">
+                    <span>관리자</span>
+                    <span>{tip.date}</span>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </section>
+
+      {/* 5. 이용후기 미리보기 */}
       <section className="max-w-7xl mx-auto px-4 w-full mb-10">
         <div className="flex justify-between items-end mb-8 border-b border-gray-200 pb-4">
           <div>
@@ -160,7 +214,6 @@ export default function Home() {
                    <div className="flex text-yellow-400">
                       {[1,2,3,4,5].map(star => <Star key={star} size={12} fill="currentColor" />)}
                    </div>
-                   {/* 서버 뱃지 추가 */}
                    <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded font-bold border border-blue-100">
                      {review.server || "전서버"}
                    </span>
