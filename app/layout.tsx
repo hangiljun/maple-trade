@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 // --- [SEO 설정] ---
 export const metadata: Metadata = {
-  // ✅ [수정됨] 사장님의 진짜 도메인 (메이플급처.com)
+  // ✅ 사장님의 진짜 도메인 (메이플급처.com)
   metadataBase: new URL('https://www.메이플급처.com'), 
 
   title: {
@@ -26,7 +26,6 @@ export const metadata: Metadata = {
   openGraph: {
     title: "메이플급처 - 실시간 아이템/메소 거래소",
     description: "메이플 급처, 메소 거래는 여기서! 24시간 안전하게 상담 가능합니다.",
-    // ✅ [수정됨] 오픈그래프 주소도 통일
     url: "https://www.메이플급처.com", 
     siteName: "메이플급처",
     locale: "ko_KR",
@@ -41,9 +40,9 @@ export const metadata: Metadata = {
     ],
   },
 
-  // ✅ [확인 완료] 아까 사진에 있던 그 코드입니다!
+  // ✅ [수정 완료] 구글 & 네이버 인증 코드 완벽 적용!
   verification: {
-    google: "", 
+    google: "Rni7NhHr2qjpxvzQReEFBVyKhDnfaiwIpN044_AeS2Y", 
     other: {
       "naver-site-verification": "1ae03adb446f41df72a8747220abda5c871be51a",
     },
