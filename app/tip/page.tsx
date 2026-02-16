@@ -39,7 +39,7 @@ export default function TipPage() {
             <div className="absolute -top-4 -left-4 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg border-2 border-white">1</div>
             <h3 className="font-bold text-lg mb-3 mt-2 text-gray-800">판매 신청</h3>
             <p className="text-gray-600 text-sm leading-relaxed">
-              카카오톡 또는 디스코드 채널을 통해 판매할 아이템의 스크린샷과 희망 가격을 전송합니다.
+              카카오톡 채널을 통해 판매할 아이템의 사진과 통판매시 닉네임을 전송합니다.
             </p>
           </div>
 
@@ -48,16 +48,16 @@ export default function TipPage() {
             <div className="absolute -top-4 -left-4 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg border-2 border-white">2</div>
             <h3 className="font-bold text-lg mb-3 mt-2 text-gray-800">시세 확인 및 조율</h3>
             <p className="text-gray-600 text-sm leading-relaxed">
-              전문 매니저가 실시간 시세를 확인하여 최적의 매입가를 제안해 드립니다.
+               실시간 경매장 시세를 확인하여 최고의 구매가격을 제안해 드립니다.
             </p>
           </div>
 
           {/* Step 3 */}
           <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm relative hover:shadow-md transition">
             <div className="absolute -top-4 -left-4 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg border-2 border-white">3</div>
-            <h3 className="font-bold text-lg mb-3 mt-2 text-gray-800">거래 및 입금</h3>
+            <h3 className="font-bold text-lg mb-3 mt-2 text-gray-800">거래 및 종료</h3>
             <p className="text-gray-600 text-sm leading-relaxed">
-              인게임에서 물품 인계 후, 5분 이내로 판매 대금이 즉시 입금됩니다.
+              게임 내에서 만나서 아이템을 확인 하고 거래 합니다. *궁금하신 내용은 문의주세요
             </p>
           </div>
         </div>
@@ -67,7 +67,7 @@ export default function TipPage() {
       <div className="mb-24">
         <h2 className="text-2xl font-bold text-green-600 mb-8 flex items-center gap-2">
           <span className="bg-green-100 p-2 rounded-lg"><CreditCard className="w-6 h-6"/></span>
-          아이템 구매 방법
+          메소 구매 방법
         </h2>
 
         <div className="space-y-4">
@@ -75,7 +75,7 @@ export default function TipPage() {
                 <MessageCircle className="text-green-500 mt-1 min-w-[24px]" />
                 <div>
                     <strong className="block text-gray-800 mb-1 text-lg">구매 문의</strong>
-                    <p className="text-gray-600 text-sm">원하시는 아이템이 있다면 '메이플급처템' 카카오톡으로 재고 문의를 남겨주세요.</p>
+                    <p className="text-gray-600 text-sm">원하시는 수량/서버/닉네임을 카카오톡으로 문의를 남겨주세요.</p>
                 </div>
             </div>
             <div className="flex justify-center py-2">
@@ -84,8 +84,8 @@ export default function TipPage() {
             <div className="flex items-start gap-4 p-5 bg-white rounded-xl border border-gray-200 shadow-sm hover:border-green-200 transition">
                 <CreditCard className="text-green-500 mt-1 min-w-[24px]" />
                 <div>
-                    <strong className="block text-gray-800 mb-1 text-lg">결제 진행</strong>
-                    <p className="text-gray-600 text-sm">안내받은 계좌로 입금하시거나, 안전거래 사이트를 통해 결제를 진행합니다.</p>
+                    <strong className="block text-gray-800 mb-1 text-lg">거래 진행</strong>
+                    <p className="text-gray-600 text-sm">카카오톡 or 문자로 게임내 지정된 장소를 정합니다.</p>
                 </div>
             </div>
              <div className="flex justify-center py-2">
@@ -94,8 +94,8 @@ export default function TipPage() {
             <div className="flex items-start gap-4 p-5 bg-white rounded-xl border border-gray-200 shadow-sm hover:border-green-200 transition">
                 <ShieldCheck className="text-green-500 mt-1 min-w-[24px]" />
                 <div>
-                    <strong className="block text-gray-800 mb-1 text-lg">아이템 수령</strong>
-                    <p className="text-gray-600 text-sm">인게임 내 지정된 장소에서 안전하게 아이템을 수령합니다.</p>
+                    <strong className="block text-gray-800 mb-1 text-lg">메소 수령</strong>
+                    <p className="text-gray-600 text-sm">인게임 내 지정된 장소에서 안전하게 메소를 수령합니다.</p>
                 </div>
             </div>
         </div>

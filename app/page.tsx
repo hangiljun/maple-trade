@@ -43,10 +43,10 @@ export default function Home() {
 
         <div className="max-w-4xl mx-auto px-4 relative z-10 animate-fade-in-up">
           <h1 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">
-            메이플스토리 급처템 <br/> 가장 안전하고 빠르게 구매하세요
+            메이플스토리 급처템 <br/> 가장 안전하고 빠르게 정리하세요
           </h1>
           <p className="text-blue-100 mb-8 text-lg">
-            시세보다 저렴한 아이템을 실시간으로 확인하고 거래할 수 있습니다.
+            실시간 경매장 매물로 시세 측정 합니다.
           </p>
           
           <div className="inline-block border-4 border-pink-500 rounded-xl p-4 bg-black/50 backdrop-blur-sm mb-10">
@@ -60,7 +60,7 @@ export default function Home() {
                <FileText size={18} /> 거래 방법
              </Link>
              <Link href="/reviews" className="flex-1 bg-white/10 backdrop-blur-md border-2 border-white text-white px-4 py-3.5 rounded-full font-bold hover:bg-white/20 transition shadow-lg flex items-center justify-center gap-2 text-sm md:text-base">
-               <Star size={18} className="text-yellow-300 fill-yellow-300"/> 리얼 후기
+               <Star size={18} className="text-yellow-300 fill-yellow-300"/> 이용 후기
              </Link>
              <a 
                href={KAKAO_LINK}
@@ -84,7 +84,7 @@ export default function Home() {
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center hover:-translate-y-1 transition duration-300">
             <ShieldCheck size={40} className="mx-auto mb-4 text-blue-600"/>
             <h3 className="text-xl font-bold mb-2 text-gray-800">무한한 신뢰</h3>
-            <p className="text-gray-500 leading-relaxed">모든 거래는 투명하게 공개되며<br/>검증된 아이템만 취급합니다.</p>
+            <p className="text-gray-500 leading-relaxed">모든 거래는 투명하게 공개되며<br/>본인 아이템만 취급합니다.</p>
           </div>
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center hover:-translate-y-1 transition duration-300">
             <Zap size={40} className="mx-auto mb-4 text-blue-600"/>
@@ -94,7 +94,7 @@ export default function Home() {
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center hover:-translate-y-1 transition duration-300">
             <TrendingUp size={40} className="mx-auto mb-4 text-blue-600"/>
             <h3 className="text-xl font-bold mb-2 text-gray-800">정확한 시세</h3>
-            <p className="text-gray-500 leading-relaxed">데이터 기반의 시세 분석으로<br/>최적의 가격을 제안합니다.</p>
+            <p className="text-gray-500 leading-relaxed">실시간 경매장 시세 분석으로<br/>최고의 가격을 제안합니다.</p>
           </div>
         </div>
       </section>
@@ -106,7 +106,7 @@ export default function Home() {
             <div className="flex-1">
               <h2 className="text-3xl font-bold mb-6 text-gray-900">왜 <span className="text-blue-600">메이플급처템</span>인가요?</h2>
               <ul className="space-y-4">
-                {["수수료 0% 직거래 시스템", "사기 조회 자동 연동", "24시간 전담 매니저 배치"].map((text, i) => (
+                {["수수료 0% 직거래 시스템", "실시간 더치트 조회", "24시간 대기 초고속 거래"].map((text, i) => (
                   <li key={i} className="flex items-start gap-3">
                     <CheckCircle className="text-blue-500 mt-1 flex-shrink-0" />
                     <strong className="text-lg text-gray-800">{text}</strong>
@@ -195,7 +195,7 @@ export default function Home() {
         <div className="flex justify-between items-end mb-8 border-b border-gray-200 pb-4">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">최근 거래 후기</h2>
-            <p className="text-sm text-gray-500 mt-1">실제 이용 고객님들이 직접 남겨주신 실시간 후기입니다.</p>
+            <p className="text-sm text-gray-500 mt-1">유저분들이 직접 남겨주신 실시간 후기입니다.</p>
           </div>
           <Link href="/reviews" className="text-sm font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 hover:underline">
             더보기 <ArrowRight size={14}/>
