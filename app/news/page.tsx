@@ -2,17 +2,24 @@
 import React, { useState, useEffect } from "react";
 import Link from 'next/link';
 import { db } from '../../firebase';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs } from 'firebase/firestore'; // ✅ getDocs 사용
 
 export default function NewsPage() {
   const [newsList, setNewsList] = useState<any[]>([]);
 
   useEffect(() => {
-    const q = query(collection(db, "news"), orderBy("createdAt", "desc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setNewsList(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-    });
-    return () => unsubscribe();
+    // ✅ 비용 절감을 위해 실시간 감시(onSnapshot) 대신 한 번만 불러오기(getDocs) 사용
+    const fetchNews = async () => {
+      try {
+        const q = query(collection(db, "news"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        setNewsList(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+      } catch (error) {
+        console.error("뉴스 로딩 실패:", error);
+      }
+    };
+    
+    fetchNews();
   }, []);
 
   const getCategoryColor = (category: string) => {

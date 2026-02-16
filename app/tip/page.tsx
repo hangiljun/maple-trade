@@ -3,27 +3,31 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, ShieldCheck, MessageCircle, CreditCard, Gift, FileText } from "lucide-react";
 import { db } from '../../firebase';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs } from 'firebase/firestore'; // ✅ getDocs 사용
 
 export default function TipPage() {
-  // 게시글 데이터 가져오기
   const [tipsList, setTipsList] = useState<any[]>([]);
 
   useEffect(() => {
-    const q = query(collection(db, "tips"), orderBy("createdAt", "desc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setTipsList(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-    });
-    return () => unsubscribe();
+    // ✅ 비용 절감을 위해 실시간 감시 대신 단발성 호출 사용
+    const fetchTips = async () => {
+      try {
+        const q = query(collection(db, "tips"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        setTipsList(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+      } catch (error) {
+        console.error("팁 로딩 실패:", error);
+      }
+    };
+    fetchTips();
   }, []);
 
   return (
-    // ✅ div 대신 main 태그를 써야 검색엔진이 좋아합니다.
+    // ✅ 검색 엔진 최적화를 위해 div 대신 main 태그 사용
     <main className="max-w-4xl mx-auto px-4 py-12 min-h-screen">
-      
+       
       {/* 1. 상단 고정 가이드 */}
       <div className="text-center mb-16">
-        {/* ✅ [수정됨] Bing이 좋아하는 H1 태그! 텍스트를 명확하게 */}
         <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">
           이용안내 및 안전거래 꿀팁
         </h1>
@@ -36,7 +40,7 @@ export default function TipPage() {
           <span className="bg-blue-100 p-2 rounded-lg"><Gift className="w-6 h-6"/></span>
           아이템 판매 방법
         </h2>
-        
+         
         <div className="grid gap-8 md:grid-cols-3">
           {/* Step 1 */}
           <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm relative hover:shadow-md transition">
@@ -52,7 +56,7 @@ export default function TipPage() {
             <div className="absolute -top-4 -left-4 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg border-2 border-white">2</div>
             <h3 className="font-bold text-lg mb-3 mt-2 text-gray-800">시세 확인 및 조율</h3>
             <p className="text-gray-600 text-sm leading-relaxed">
-               실시간 경매장 시세를 확인하여 최고의 구매가격을 제안해 드립니다.
+                실시간 경매장 시세를 확인하여 최고의 구매가격을 제안해 드립니다.
             </p>
           </div>
 
@@ -126,14 +130,13 @@ export default function TipPage() {
                   <span className="w-1.5 h-6 bg-purple-500 rounded-full"></span>
                   <h3 className="text-xl font-bold text-gray-800">{item.title}</h3>
                 </div>
-                
-                {/* 미디어 (사진/동영상) */}
+                 
                 {item.thumbnail && (
                   <div className="mb-6 rounded-xl overflow-hidden border border-gray-100 bg-black/5">
                     {item.fileType === 'video' ? (
                       <video src={item.thumbnail} controls className="w-full max-h-[400px] object-contain mx-auto" />
                     ) : (
-                      // ✅ [수정됨] alt 태그에 제목을 넣어줘야 이미지 검색에 뜹니다!
+                      // ✅ 이미지 Alt 태그 강화 (SEO)
                       <img src={item.thumbnail} alt={`메이플급처 꿀팁 - ${item.title}`} className="w-full max-h-[400px] object-contain mx-auto" />
                     )}
                   </div>

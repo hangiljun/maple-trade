@@ -4,20 +4,17 @@ import Link from "next/link";
 import { 
   ShieldCheck, Zap, TrendingUp, Star, 
   MessageCircle, FileText, ArrowRight, CheckCircle, Bell, Lightbulb,
-  HelpCircle, ChevronDown, ChevronUp // ✅ 아이콘 추가됨
+  HelpCircle, ChevronDown, ChevronUp
 } from "lucide-react";
 import { db } from '../firebase'; 
-import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore'; // ✅ getDocs 사용
 
 export default function Home() {
   const KAKAO_LINK = "https://open.kakao.com/o/sKg86b7f";
   const [recentReviews, setRecentReviews] = useState<any[]>([]);
-  const [recentTips, setRecentTips] = useState<any[]>([]); // ✅ 팁/공지 데이터 상태
-
-  // ✅ [NEW] Q&A 아코디언 상태 관리
+  const [recentTips, setRecentTips] = useState<any[]>([]);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  // ✅ [NEW] 자주 묻는 질문 데이터
   const FAQS = [
     {
       q: "거래 절차가 어떻게 되나요?",
@@ -25,7 +22,7 @@ export default function Home() {
     },
     {
       q: "정말 안전한가요? 사기는 없나요?",
-      a: "저희는 수년간 무사고로 진행 했며, 더치트 사기 이력 조회 시스템을 이용 합니다. 사고 발생 시 100% 전액 보상을 약속드립니다."
+      a: "저희는 수년간 무사고로 진행 했으며, 더치트 사기 이력 조회 시스템을 이용 합니다. 사고 발생 시 100% 전액 보상을 약속드립니다."
     },
     {
       q: "시세 확인후 종료까지 얼마나 걸리나요?",
@@ -42,14 +39,15 @@ export default function Home() {
   };
 
   useEffect(() => {
+    // ✅ 메인페이지 접속마다 실시간 리스너가 켜지면 비용이 급증하므로 getDocs 사용
     const fetchData = async () => {
       try {
-        // 1. 최근 후기 4개 가져오기
+        // 1. 최근 후기 4개
         const reviewQ = query(collection(db, "reviews"), orderBy("createdAt", "desc"), limit(4));
         const reviewSnap = await getDocs(reviewQ);
         setRecentReviews(reviewSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
 
-        // 2. ✅ 최근 팁/공지 3개 가져오기 (관리자가 쓴 글)
+        // 2. 최근 팁/공지 3개
         const tipQ = query(collection(db, "tips"), orderBy("createdAt", "desc"), limit(3));
         const tipSnap = await getDocs(tipQ);
         setRecentTips(tipSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -63,7 +61,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col gap-12 pb-20">
-      
+       
       {/* 1. 홍보 배너 구역 */}
       <section className="bg-gradient-to-r from-blue-600 to-indigo-700 py-20 text-center text-white relative overflow-hidden">
         <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
@@ -76,7 +74,7 @@ export default function Home() {
           <p className="text-blue-100 mb-8 text-lg">
             실시간 경매장 매물로 시세 측정 합니다.
           </p>
-          
+           
           <div className="inline-block border-4 border-pink-500 rounded-xl p-4 bg-black/50 backdrop-blur-sm mb-10">
             <p className="neon-text text-xl md:text-2xl font-mono">
               365일 24시간 메이플 거래 대기중
@@ -164,7 +162,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ✅ 4. [NEW] 이용 팁 & 공지사항 섹션 (관리자 작성글 연동) */}
+      {/* 4. 이용 팁 & 공지사항 섹션 */}
       <section className="max-w-7xl mx-auto px-4 w-full">
         <div className="flex justify-between items-end mb-6">
           <div>
@@ -186,7 +184,6 @@ export default function Home() {
           ) : (
             recentTips.map((tip) => (
               <div key={tip.id} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition cursor-pointer flex flex-col h-full">
-                {/* 썸네일 영역 */}
                 <div className="h-40 bg-gray-100 relative overflow-hidden">
                   {tip.thumbnail ? (
                     <img src={tip.thumbnail} alt={tip.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500"/>
@@ -199,7 +196,6 @@ export default function Home() {
                     공지
                   </div>
                 </div>
-                {/* 텍스트 영역 */}
                 <div className="p-5 flex-1 flex flex-col">
                   <h3 className="font-bold text-lg text-gray-800 mb-2 line-clamp-1 group-hover:text-blue-600 transition">
                     {tip.title}
@@ -239,12 +235,12 @@ export default function Home() {
             recentReviews.map((review) => (
               <div key={review.id} className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition cursor-pointer hover:-translate-y-1">
                 <div className="flex justify-between items-start mb-3">
-                   <div className="flex text-yellow-400">
+                    <div className="flex text-yellow-400">
                       {[1,2,3,4,5].map(star => <Star key={star} size={12} fill="currentColor" />)}
-                   </div>
-                   <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded font-bold border border-blue-100">
-                     {review.server || "전서버"}
-                   </span>
+                    </div>
+                    <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded font-bold border border-blue-100">
+                      {review.server || "전서버"}
+                    </span>
                 </div>
                 <p className="text-gray-800 text-sm font-bold mb-2 truncate">{review.title}</p>
                 <p className="text-gray-500 text-xs line-clamp-2 h-9 leading-relaxed mb-3">
@@ -260,7 +256,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ✅ 6. [NEW] Q&A (자주 묻는 질문) 섹션 추가 */}
+      {/* 6. 자주 묻는 질문(FAQ) */}
       <section className="bg-gray-50 py-16 w-full mt-4 rounded-t-[40px] border-t border-gray-100">
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center mb-10">
