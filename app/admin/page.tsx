@@ -1,102 +1,106 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { 
-  collection, addDoc, deleteDoc, doc, getDocs, updateDoc, query, orderBy 
+import {
+  collection,
+  addDoc,
+  deleteDoc,
+  doc,
+  getDocs,
+  query,
+  orderBy,
 } from "firebase/firestore";
-import { 
-  ref, uploadBytes, getDownloadURL 
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
 } from "firebase/storage";
-import { 
-  getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, User 
+import {
+  signOut,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  User,
 } from "firebase/auth";
-import { db, storage } from '../../firebase'; 
+import { db, storage, auth } from "../../firebase";
 import { Trash2, Upload, LogOut, Lock, ShieldAlert } from "lucide-react";
 
-// 🔒 [보안 설정] 사장님 구글 아이디 (이 이메일만 접속 가능)
-const ADMIN_EMAIL = "6332159@gmail.com"; 
+const ADMIN_EMAIL = "6332159@gmail.com";
 
 export default function AdminPage() {
-  // --- 인증 상태 ---
   const [user, setUser] = useState<User | null>(null);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // --- 데이터 상태 ---
-  const [activeTab, setActiveTab] = useState("tips"); // tips | news
+  const [activeTab, setActiveTab] = useState("tips");
   const [list, setList] = useState<any[]>([]);
-  
-  // 입력 폼 상태
+
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
-  const auth = getAuth();
+  // 🔐 로그인 입력값
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  // 1. 로그인 상태 확인 (보안 체크)
+  // 🔐 인증 체크
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setLoading(false);
+
       if (currentUser) {
-        setUser(currentUser);
-        // 이메일이 관리자 이메일과 똑같은지 확인
         if (currentUser.email === ADMIN_EMAIL) {
+          setUser(currentUser);
           setIsAuthorized(true);
-          fetchData(activeTab); // 접속 성공시 데이터 로딩
+          fetchData(activeTab);
         } else {
-          setIsAuthorized(false);
-          alert("접근 권한이 없는 계정입니다.");
-          signOut(auth); // 강제 로그아웃
+          alert("관리자 계정이 아닙니다.");
+          signOut(auth);
         }
       } else {
         setUser(null);
         setIsAuthorized(false);
       }
     });
-    return () => unsubscribe();
-  }, [auth, activeTab]);
 
-  // 2. 구글 로그인 함수
-  const handleGoogleLogin = async () => {
-    const provider = new GoogleAuthProvider();
+    return () => unsubscribe();
+  }, [activeTab]);
+
+  // 🔐 이메일 로그인
+  const handleLogin = async () => {
     try {
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error("로그인 실패:", error);
-      alert("로그인 중 오류가 발생했습니다.");
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (error: any) {
+      console.log("로그인 에러:", error.code);
+      alert(error.message);
     }
   };
 
-  // 3. 로그아웃 함수
-  const handleLogout = () => {
-    signOut(auth);
-    alert("안전하게 로그아웃 되었습니다.");
+  const handleLogout = async () => {
+    await signOut(auth);
+    alert("로그아웃 되었습니다.");
   };
 
-  // --- 데이터 가져오기 ---
   const fetchData = async (tab: string) => {
     const collectionName = tab === "tips" ? "tips" : "news";
     const q = query(collection(db, collectionName), orderBy("createdAt", "desc"));
     const snapshot = await getDocs(q);
-    setList(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    setList(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
   };
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
-    if(isAuthorized) fetchData(tab);
+    if (isAuthorized) fetchData(tab);
   };
 
-  // --- 글 등록 (사진/영상 포함) ---
   const handleUpload = async () => {
-    if (!title || !content) return alert("제목과 내용을 입력해주세요.");
-    if (!isAuthorized) return alert("권한이 없습니다.");
+    if (!title || !content) return alert("제목과 내용을 입력하세요.");
+    if (!isAuthorized) return alert("권한 없음");
 
     setUploading(true);
     let fileUrl = "";
     let fileType = "image";
 
     try {
-      // 파일 업로드 (있을 경우만)
       if (file) {
         const storageRef = ref(storage, `${activeTab}/${Date.now()}_${file.name}`);
         await uploadBytes(storageRef, file);
@@ -104,18 +108,19 @@ export default function AdminPage() {
         fileType = file.type.startsWith("video") ? "video" : "image";
       }
 
-      // Firestore 저장
-      await addDoc(collection(db, activeTab === "tips" ? "tips" : "news"), {
+      await addDoc(collection(db, activeTab), {
         title,
         content,
         thumbnail: fileUrl,
         fileType,
         date: new Date().toLocaleDateString(),
-        createdAt: new Date()
+        createdAt: new Date(),
       });
 
-      alert("등록되었습니다!");
-      setTitle(""); setContent(""); setFile(null);
+      alert("등록 완료");
+      setTitle("");
+      setContent("");
+      setFile(null);
       fetchData(activeTab);
     } catch (e) {
       console.error(e);
@@ -125,12 +130,12 @@ export default function AdminPage() {
     }
   };
 
-  // --- 글 삭제 ---
   const handleDelete = async (id: string) => {
-    if(!confirm("정말 삭제하시겠습니까?")) return;
+    if (!confirm("삭제하시겠습니까?")) return;
+
     try {
-      await deleteDoc(doc(db, activeTab === "tips" ? "tips" : "news", id));
-      alert("삭제되었습니다.");
+      await deleteDoc(doc(db, activeTab, id));
+      alert("삭제 완료");
       fetchData(activeTab);
     } catch (e) {
       console.error(e);
@@ -138,127 +143,105 @@ export default function AdminPage() {
     }
   };
 
-  // --- 렌더링: 로딩 중 ---
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">보안 확인 중...</div>;
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
+        보안 확인 중...
+      </div>
+    );
 
-  // --- 렌더링: 로그인 안 된 상태 (잠금 화면) ---
+  // 🔐 로그인 화면
   if (!isAuthorized) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 px-4">
         <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full text-center">
-          <div className="bg-red-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Lock size={40} className="text-red-600" />
-          </div>
-          <h1 className="text-2xl font-black text-gray-900 mb-2">관리자 접근 제한</h1>
-          <p className="text-gray-500 mb-8">
-            등록된 관리자 계정(구글)으로만<br/>접속할 수 있는 보안 페이지입니다.
-          </p>
-          
-          <button 
-            onClick={handleGoogleLogin}
-            className="w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-3 transition shadow-sm"
+          <Lock size={40} className="text-red-600 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold mb-6">관리자 로그인</h1>
+
+          <input
+            type="email"
+            placeholder="이메일"
+            className="w-full p-3 border rounded-lg mb-3"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+
+          <input
+            type="password"
+            placeholder="비밀번호"
+            className="w-full p-3 border rounded-lg mb-4"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          <button
+            onClick={handleLogin}
+            className="w-full bg-black text-white py-3 rounded-xl font-bold"
           >
-            <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-6 h-6" alt="google" />
-            구글 계정으로 로그인
+            로그인
           </button>
         </div>
       </div>
     );
   }
 
-  // --- 렌더링: 로그인 성공 상태 (관리자 대시보드) ---
+  // 🔐 관리자 화면
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-black text-gray-900 flex items-center gap-2">
-            <ShieldAlert className="text-blue-600"/> 관리자 모드
+        <div className="flex justify-between mb-6">
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <ShieldAlert /> 관리자 모드
           </h1>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-500 font-bold hidden md:inline">
-              {user?.email}님 접속중
-            </span>
-            <button 
-              onClick={handleLogout}
-              className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition"
-            >
-              <LogOut size={16}/> 로그아웃
-            </button>
-          </div>
+          <button
+            onClick={handleLogout}
+            className="bg-gray-800 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+          >
+            <LogOut size={16} /> 로그아웃
+          </button>
         </div>
 
-        {/* 탭 메뉴 */}
         <div className="flex gap-4 mb-6">
-          <button 
-            onClick={() => handleTabChange("tips")}
-            className={`px-6 py-3 rounded-xl font-bold transition ${activeTab === "tips" ? "bg-blue-600 text-white shadow-lg" : "bg-white text-gray-500"}`}
-          >
-            💡 거래 꿀팁 관리
-          </button>
-          <button 
-            onClick={() => handleTabChange("news")}
-            className={`px-6 py-3 rounded-xl font-bold transition ${activeTab === "news" ? "bg-blue-600 text-white shadow-lg" : "bg-white text-gray-500"}`}
-          >
-            📰 뉴스/이슈 관리
-          </button>
+          <button onClick={() => handleTabChange("tips")}>거래 꿀팁</button>
+          <button onClick={() => handleTabChange("news")}>뉴스</button>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
-          {/* 글쓰기 폼 */}
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 h-fit">
-            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <Upload size={20} /> 새 글 등록
-            </h2>
-            <div className="space-y-4">
-              <input 
-                value={title} 
-                onChange={(e) => setTitle(e.target.value)} 
-                placeholder="제목을 입력하세요" 
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-              <textarea 
-                value={content} 
-                onChange={(e) => setContent(e.target.value)} 
-                placeholder="내용을 입력하세요" 
-                className="w-full p-3 border border-gray-300 rounded-lg h-40 resize-none focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                 <input type="file" onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)} className="hidden" id="file-upload"/>
-                 <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center gap-2 text-gray-500 hover:text-blue-600">
-                    <Upload size={24}/>
-                    {file ? <span className="text-blue-600 font-bold">{file.name}</span> : "사진/동영상 클릭하여 업로드"}
-                 </label>
-              </div>
-              <button 
-                onClick={handleUpload} 
-                disabled={uploading}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold transition shadow-md disabled:bg-gray-400"
-              >
-                {uploading ? "업로드 중..." : "등록하기"}
-              </button>
-            </div>
+          <div>
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="제목"
+              className="w-full p-3 border mb-3"
+            />
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="내용"
+              className="w-full p-3 border mb-3"
+            />
+            <input
+              type="file"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              className="mb-3"
+            />
+            <button
+              onClick={handleUpload}
+              className="w-full bg-blue-600 text-white py-3 rounded"
+            >
+              등록
+            </button>
           </div>
 
-          {/* 등록된 목록 */}
-          <div className="space-y-4">
-             <h2 className="text-xl font-bold mb-4">등록된 목록 ({list.length})</h2>
-             {list.map((item) => (
-               <div key={item.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex justify-between items-center group">
-                 <div className="flex-1 truncate pr-4">
-                   <h3 className="font-bold text-gray-800 truncate">{item.title}</h3>
-                   <p className="text-gray-400 text-sm">{item.date}</p>
-                 </div>
-                 {item.thumbnail && (
-                   <img src={item.thumbnail} alt="thumb" className="w-12 h-12 rounded-lg object-cover bg-gray-100 mr-4 border border-gray-200"/>
-                 )}
-                 <button 
-                   onClick={() => handleDelete(item.id)}
-                   className="text-red-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition"
-                 >
-                   <Trash2 size={20}/>
-                 </button>
-               </div>
-             ))}
+          <div>
+            {list.map((item) => (
+              <div key={item.id} className="border p-3 mb-3 flex justify-between">
+                <div>{item.title}</div>
+                <button onClick={() => handleDelete(item.id)}>
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            ))}
           </div>
         </div>
       </div>
