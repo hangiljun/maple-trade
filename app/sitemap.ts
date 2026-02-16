@@ -1,26 +1,26 @@
-import { MetadataRoute } from 'next';
+import { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://www.메이플급처.com'; // 사장님 진짜 주소
+  const baseUrl = 'https://www.메이플급처.com'
 
   return [
     {
       url: baseUrl,
       lastModified: new Date(),
-      changeFrequency: 'always',
+      changeFrequency: 'daily',
       priority: 1,
     },
     {
       url: `${baseUrl}/tip`,
       lastModified: new Date(),
-      changeFrequency: 'daily',
+      changeFrequency: 'weekly',
       priority: 0.8,
     },
     {
       url: `${baseUrl}/reviews`,
       lastModified: new Date(),
-      changeFrequency: 'always',
-      priority: 0.8,
+      changeFrequency: 'daily',
+      priority: 0.9,
     },
     {
       url: `${baseUrl}/news`,
@@ -28,5 +28,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'daily',
       priority: 0.8,
     },
-  ];
+  ]
 }
