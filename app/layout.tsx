@@ -6,27 +6,29 @@ import { Menu, MessageCircle } from "lucide-react";
 
 const inter = Inter({ subsets: ["latin"] });
 
-// --- [SEO 설정] (기존 설정 유지) ---
+// --- [SEO 설정] ---
 export const metadata: Metadata = {
-  metadataBase: new URL('https://www.xn--kj0b36u99jp4ed8l.com'), 
+  // ✅ [수정됨] 사장님의 진짜 도메인 (메이플급처.com)
+  metadataBase: new URL('https://www.메이플급처.com'), 
 
   title: {
-    default: "메이플급처템 - 메이플스토리 아이템/메소 안전거래",
-    template: "%s | 메이플급처템",
+    default: "메이플급처 - 메이플스토리 아이템/메소 안전거래",
+    template: "%s | 메이플급처",
   },
   description: "메이플스토리 아이템 및 메소 최고가 매입, 최저가 판매. 스카니아, 루나, 엘리시움 등 전 서버 24시간 안전거래소. 사기 걱정 없는 빠른 거래.",
   
   keywords: [
-    "메이플급처템", "메이플스토리", "메이플 급처", "메이플 아이템", "메소 시세", 
+    "메이플급처", "메이플스토리", "메이플 급처템", "메이플 아이템", "메소 시세", 
     "메이플 장사", "스카니아", "루나", "엘리시움", "크로아", "베라", 
-    "아이템 매입", "급처템 판매", "메이플 안전거래"
+    "아이템 매입", "급처 판매", "메이플 안전거래"
   ],
   
   openGraph: {
-    title: "메이플급처템 - 실시간 아이템/메소 거래소",
-    description: "메이플 급처템, 메소 거래는 여기서! 24시간 안전하게 상담 가능합니다.",
-    url: "https://www.xn--kj0b36u99jp4ed8l.com", 
-    siteName: "메이플급처템",
+    title: "메이플급처 - 실시간 아이템/메소 거래소",
+    description: "메이플 급처, 메소 거래는 여기서! 24시간 안전하게 상담 가능합니다.",
+    // ✅ [수정됨] 오픈그래프 주소도 통일
+    url: "https://www.메이플급처.com", 
+    siteName: "메이플급처",
     locale: "ko_KR",
     type: "website",
     images: [
@@ -34,15 +36,16 @@ export const metadata: Metadata = {
         url: "/og-image.png", 
         width: 1200,
         height: 630,
-        alt: "메이플급처템 대표 이미지",
+        alt: "메이플급처 대표 이미지",
       },
     ],
   },
 
+  // ✅ [확인 완료] 아까 사진에 있던 그 코드입니다!
   verification: {
     google: "", 
     other: {
-      "naver-site-verification": "",
+      "naver-site-verification": "1ae03adb446f41df72a8747220abda5c871be51a",
     },
   },
 
@@ -59,7 +62,7 @@ export default function RootLayout({
   const today = new Date();
   const dateString = `${today.getMonth() + 1}월 ${today.getDate()}일`;
 
-  // ✅ 사장님의 실제 카톡 링크
+  // ✅ 카톡 링크
   const KAKAO_LINK = "https://open.kakao.com/o/sKg86b7f"; 
 
   return (
@@ -77,13 +80,11 @@ export default function RootLayout({
 
             {/* 1. 로고 (가운데 정렬) */}
             <Link href="/" className="text-3xl md:text-4xl font-black text-gray-900 tracking-tighter hover:opacity-80 transition">
-              메이플<span className="text-blue-600">급처템</span>
+              메이플<span className="text-blue-600">급처</span>
             </Link>
             
-            {/* 2. [수정됨] 날짜 배지 + 카톡 버튼을 한 줄에 배치 */}
+            {/* 2. 날짜 배지 + 카톡 버튼 */}
             <div className="mt-2 flex items-center gap-2">
-              
-              {/* 날짜 네온사인 */}
               <div className="px-3 py-1 rounded-full border border-green-200 bg-green-50 text-green-600 text-sm font-bold shadow-[0_0_10px_rgba(34,197,94,0.4)] flex items-center gap-2">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -92,7 +93,6 @@ export default function RootLayout({
                 {dateString} 정상 운영중
               </div>
 
-              {/* 카톡 문의 버튼 (여기로 이동!) */}
               <a 
                 href={KAKAO_LINK}
                 target="_blank"
@@ -102,9 +102,7 @@ export default function RootLayout({
                 <MessageCircle size={14} fill="#3A1D1D" className="md:w-4 md:h-4"/>
                 <span className="md:inline">카톡문의</span>
               </a>
-
             </div>
-
           </div>
 
           {/* 네비게이션 */}
@@ -126,10 +124,10 @@ export default function RootLayout({
         </main>
 
         <footer className="bg-gray-900 text-gray-400 py-10 text-center text-sm">
-          <p>COPYRIGHT © 메이플급처템 ALL RIGHTS RESERVED.</p>
+          <p>COPYRIGHT © 메이플급처 ALL RIGHTS RESERVED.</p>
         </footer>
 
-        {/* 우측 하단 둥둥 떠다니는 카톡 버튼 (유지) */}
+        {/* 우측 하단 둥둥 떠다니는 카톡 버튼 */}
         <a 
           href={KAKAO_LINK}
           target="_blank"
