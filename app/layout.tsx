@@ -6,9 +6,8 @@ import { Menu, MessageCircle } from "lucide-react";
 
 const inter = Inter({ subsets: ["latin"] });
 
-// --- [SEO 설정] 도메인 및 검색 최적화 ---
+// --- [SEO 설정] (기존 설정 유지) ---
 export const metadata: Metadata = {
-  // 1. 사장님 도메인 (한글 도메인 '메이플급처템.com'의 퓨니코드)
   metadataBase: new URL('https://www.xn--kj0b36u99jp4ed8l.com'), 
 
   title: {
@@ -26,13 +25,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: "메이플급처템 - 실시간 아이템/메소 거래소",
     description: "메이플 급처템, 메소 거래는 여기서! 24시간 안전하게 상담 가능합니다.",
-    url: "https://www.xn--kj0b36u99jp4ed8l.com", // 실제 도메인
+    url: "https://www.xn--kj0b36u99jp4ed8l.com", 
     siteName: "메이플급처템",
     locale: "ko_KR",
     type: "website",
     images: [
       {
-        url: "/og-image.png", // public 폴더에 로고 이미지 넣어두세요!
+        url: "/og-image.png", 
         width: 1200,
         height: 630,
         alt: "메이플급처템 대표 이미지",
@@ -40,7 +39,6 @@ export const metadata: Metadata = {
     ],
   },
 
-  // 나중에 구글/네이버 인증 코드 받으면 여기에 넣으세요
   verification: {
     google: "", 
     other: {
@@ -77,32 +75,36 @@ export default function RootLayout({
               <Menu className="w-6 h-6 text-gray-600" />
             </div>
 
-            {/* 로고 + 카톡 버튼 영역 */}
-            <div className="flex items-center gap-3">
-              <Link href="/" className="text-2xl md:text-4xl font-black text-gray-900 tracking-tighter hover:opacity-80 transition">
-                메이플<span className="text-blue-600">급처템</span>
-              </Link>
+            {/* 1. 로고 (가운데 정렬) */}
+            <Link href="/" className="text-3xl md:text-4xl font-black text-gray-900 tracking-tighter hover:opacity-80 transition">
+              메이플<span className="text-blue-600">급처템</span>
+            </Link>
+            
+            {/* 2. [수정됨] 날짜 배지 + 카톡 버튼을 한 줄에 배치 */}
+            <div className="mt-2 flex items-center gap-2">
               
-              {/* [요청 1] 로고 옆 카톡 버튼 */}
+              {/* 날짜 네온사인 */}
+              <div className="px-3 py-1 rounded-full border border-green-200 bg-green-50 text-green-600 text-sm font-bold shadow-[0_0_10px_rgba(34,197,94,0.4)] flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+                {dateString} 정상 운영중
+              </div>
+
+              {/* 카톡 문의 버튼 (여기로 이동!) */}
               <a 
                 href={KAKAO_LINK}
                 target="_blank"
                 rel="noreferrer"
-                className="bg-[#FEE500] text-[#3A1D1D] px-2 py-1 md:px-3 md:py-1.5 rounded-lg font-bold text-xs md:text-sm flex items-center gap-1 hover:bg-yellow-400 transition shadow-sm animate-pulse"
+                className="bg-[#FEE500] text-[#3A1D1D] px-2 py-1 md:px-3 md:py-1 rounded-full font-bold text-xs md:text-sm flex items-center gap-1 hover:bg-yellow-400 transition shadow-sm animate-pulse"
               >
                 <MessageCircle size={14} fill="#3A1D1D" className="md:w-4 md:h-4"/>
                 <span className="md:inline">카톡문의</span>
               </a>
+
             </div>
 
-            {/* 날짜 네온사인 */}
-            <div className="mt-2 px-3 py-1 rounded-full border border-green-200 bg-green-50 text-green-600 text-sm font-bold shadow-[0_0_10px_rgba(34,197,94,0.4)] flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-              </span>
-              {dateString} 정상 운영중
-            </div>
           </div>
 
           {/* 네비게이션 */}
@@ -127,7 +129,7 @@ export default function RootLayout({
           <p>COPYRIGHT © 메이플급처템 ALL RIGHTS RESERVED.</p>
         </footer>
 
-        {/* [요청 3] 우측 하단 둥둥 떠다니는 카톡 버튼 */}
+        {/* 우측 하단 둥둥 떠다니는 카톡 버튼 (유지) */}
         <a 
           href={KAKAO_LINK}
           target="_blank"
