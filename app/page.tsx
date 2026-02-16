@@ -1,85 +1,49 @@
 import React from "react";
 import Link from "next/link";
-import Image from "next/image"; // ✅ 이미지 최적화를 위해 추가
 import { 
   ShieldCheck, Zap, TrendingUp, Star, 
   MessageCircle, FileText, ArrowRight, CheckCircle, Bell, Lightbulb
 } from "lucide-react";
 import { db } from '../firebase'; 
 import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
-import FaqSection from "@/app/components/FaqSection"; 
+import FaqSection from "@/app/components/FaqSection"; // 👈 위에서 만든 컴포넌트 불러오기 (경로 주의)
 import type { Metadata } from "next";
 
-// ✅ [핵심 1] 배포 시 최신 글이 안 보이는 문제 방지 (서버 사이드 렌더링 강제)
-export const dynamic = "force-dynamic";
-
-// 📝 [SEO] 메타데이터
+// 📝 [SEO 입력 구간 1] 메인 페이지 제목과 설명
 export const metadata: Metadata = {
   title: "메이플급처 - 안전하고 빠른 메이플스토리 아이템/메소 거래소",
   description: "스카니아, 루나, 엘리시움, 크로아 전 서버 메소 및 아이템 최고가 매입, 최저가 판매. 24시간 실시간 시세 확인 및 즉시 거래 가능.",
   keywords: ["메이플급처", "메이플메소", "메이플급처템", "메이플스토리 메소", "메이플 아이템 판매", "스카니아 메소", "루나 메소"],
-  alternates: {
-    canonical: "https://www.메이플급처.com", // ✅ [추천] 대표 도메인 설정 (SEO 점수 UP)
-  },
 };
-
-// 🛡️ [데이터 설계도]
-interface Review {
-  id: string;
-  title: string;
-  content: string;
-  author: string;
-  date: string;
-  server?: string;
-}
-
-interface Tip {
-  id: string;
-  title: string;
-  content: string;
-  date: string;
-  thumbnail?: string;
-}
 
 export default async function Home() {
   const KAKAO_LINK = "https://open.kakao.com/o/sKg86b7f";
   
-  let recentReviews: Review[] = [];
-  let recentTips: Tip[] = [];
+  // ✅ 서버에서 데이터 직접 가져오기 (SEO 최적화)
+  let recentReviews: any[] = [];
+  let recentTips: any[] = [];
 
   try {
-    // ✅ [핵심 3] createdAt이 없는 문서가 있어도 에러 안 나게 안전장치
-    // 1. 후기 가져오기
-    const reviewRef = collection(db, "reviews");
-    const reviewQ = query(reviewRef, orderBy("createdAt", "desc"), limit(4));
+    // 1. 최근 후기 4개
+    const reviewQ = query(collection(db, "reviews"), orderBy("createdAt", "desc"), limit(4));
     const reviewSnap = await getDocs(reviewQ);
-    recentReviews = reviewSnap.docs.map(doc => ({ 
-      id: doc.id, 
-      ...doc.data() 
-    } as Review));
+    recentReviews = reviewSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    // 2. 팁/공지 가져오기
-    const tipRef = collection(db, "tips");
-    const tipQ = query(tipRef, orderBy("createdAt", "desc"), limit(3));
+    // 2. 최근 팁/공지 3개
+    const tipQ = query(collection(db, "tips"), orderBy("createdAt", "desc"), limit(3));
     const tipSnap = await getDocs(tipQ);
-    recentTips = tipSnap.docs.map(doc => ({ 
-      id: doc.id, 
-      ...doc.data() 
-    } as Tip));
-
+    recentTips = tipSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   } catch (e) {
-    // 에러 발생 시 콘솔에만 찍고, 사용자에겐 빈 목록을 보여줌 (페이지 터짐 방지)
-    console.error("🔥 데이터 로딩 에러:", e);
+    console.error("데이터 로딩 실패", e);
   }
 
   return (
     <div className="flex flex-col gap-12 pb-20">
        
-      {/* 1. 홍보 배너 */}
+      {/* 1. 홍보 배너 구역 */}
       <section className="bg-gradient-to-r from-blue-600 to-indigo-700 py-20 text-center text-white relative overflow-hidden">
-        {/* 배경 효과 */}
-        <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl pointer-events-none"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-400/10 rounded-full translate-x-1/3 translate-y-1/3 blur-3xl pointer-events-none"></div>
+        <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-400/10 rounded-full translate-x-1/3 translate-y-1/3 blur-3xl"></div>
 
         <div className="max-w-4xl mx-auto px-4 relative z-10 animate-fade-in-up">
           <h1 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">
@@ -114,7 +78,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 2. 약속 섹션 */}
+      {/* 2. 사이트 신념 */}
       <section className="max-w-7xl mx-auto px-4 w-full">
         <div className="text-center mb-10">
           <h2 className="text-2xl font-bold text-gray-800">우리의 약속</h2>
@@ -139,7 +103,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 3. 특징 및 비교 섹션 */}
+      {/* 3. 특징 및 타 사이트 비교 */}
       <section className="bg-white py-16 w-full border-y border-gray-100">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col lg:flex-row gap-12 items-center">
@@ -176,7 +140,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 4. 공지사항 섹션 */}
+      {/* 4. 이용 팁 & 공지사항 섹션 */}
       <section className="max-w-7xl mx-auto px-4 w-full">
         <div className="flex justify-between items-end mb-6">
           <div>
@@ -200,19 +164,13 @@ export default async function Home() {
               <div key={tip.id} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition cursor-pointer flex flex-col h-full">
                 <div className="h-40 bg-gray-100 relative overflow-hidden">
                   {tip.thumbnail ? (
-                    // ✅ [핵심 2] next/image로 변경하여 로딩 속도 향상
-                    <Image 
-                      src={tip.thumbnail} 
-                      alt={tip.title} 
-                      fill 
-                      className="object-cover group-hover:scale-105 transition duration-500"
-                    />
+                    <img src={tip.thumbnail} alt={tip.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500"/>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-blue-50 text-blue-200">
                       <Lightbulb size={48} />
                     </div>
                   )}
-                  <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded z-10">
+                  <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded">
                     공지
                   </div>
                 </div>
@@ -234,7 +192,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 5. 후기 섹션 */}
+      {/* 5. 이용후기 미리보기 */}
       <section className="max-w-7xl mx-auto px-4 w-full mb-10">
         <div className="flex justify-between items-end mb-8 border-b border-gray-200 pb-4">
           <div>
@@ -276,7 +234,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 6. FAQ (클라이언트 컴포넌트) */}
+      {/* 6. 자주 묻는 질문(FAQ) - 분리된 컴포넌트 사용 */}
       <FaqSection />
 
     </div>
