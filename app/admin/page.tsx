@@ -10,7 +10,7 @@ import {
   signInWithEmailAndPassword, signOut, onAuthStateChanged, User 
 } from "firebase/auth";
 import { db, storage, auth } from '../../firebase'; 
-import { Trash2, Upload, LogOut, Lock, ShieldAlert, Key, User as UserIcon } from "lucide-react";
+import { Trash2, Upload, LogOut, Lock, ShieldAlert, Key, User as UserIcon, MessageCircle } from "lucide-react";
 
 // 🔒 [보안 설정] 사장님 아이디
 const ADMIN_EMAIL = "6332159@gmail.com"; 
@@ -21,12 +21,13 @@ export default function AdminPage() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // --- 로그인 입력 상태 (여기가 중요!) ---
+  // --- 로그인 입력 상태 ---
   const [inputEmail, setInputEmail] = useState("");
   const [inputPassword, setInputPassword] = useState("");
 
   // --- 데이터 상태 ---
-  const [activeTab, setActiveTab] = useState("tips"); // tips | news
+  // ✅ 탭에 'reviews' 추가
+  const [activeTab, setActiveTab] = useState("tips"); // tips | news | reviews
   const [list, setList] = useState<any[]>([]);
   
   // 글쓰기 폼 상태
@@ -35,7 +36,7 @@ export default function AdminPage() {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
-  // 1. 로그인 상태 확인 (보안 체크)
+  // 1. 로그인 상태 확인
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setLoading(false);
@@ -43,7 +44,7 @@ export default function AdminPage() {
         setUser(currentUser);
         if (currentUser.email === ADMIN_EMAIL) {
           setIsAuthorized(true);
-          fetchData(activeTab); // 접속 성공시 데이터 로딩
+          fetchData(activeTab); 
         } else {
           setIsAuthorized(false);
           alert("접근 권한이 없는 계정입니다.");
@@ -57,7 +58,7 @@ export default function AdminPage() {
     return () => unsubscribe();
   }, [activeTab]);
 
-  // 2. 로그인 함수 (이메일/비번 방식)
+  // 2. 로그인 함수
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -76,12 +77,20 @@ export default function AdminPage() {
     alert("안전하게 로그아웃 되었습니다.");
   };
 
-  // --- 데이터 가져오기 ---
+  // --- 데이터 가져오기 (이용후기 포함) ---
   const fetchData = async (tab: string) => {
-    const collectionName = tab === "tips" ? "tips" : "news";
-    const q = query(collection(db, collectionName), orderBy("createdAt", "desc"));
-    const snapshot = await getDocs(q);
-    setList(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    // ✅ 탭 이름에 따라 가져올 컬렉션 이름 결정
+    let collectionName = "tips";
+    if (tab === "news") collectionName = "news";
+    if (tab === "reviews") collectionName = "reviews";
+
+    try {
+      const q = query(collection(db, collectionName), orderBy("createdAt", "desc"));
+      const snapshot = await getDocs(q);
+      setList(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    } catch (error) {
+      console.error("데이터 로딩 실패:", error);
+    }
   };
 
   const handleTabChange = (tab: string) => {
@@ -89,7 +98,7 @@ export default function AdminPage() {
     if(isAuthorized) fetchData(tab);
   };
 
-  // --- 글 등록 ---
+  // --- 글 등록 (꿀팁/뉴스만 가능) ---
   const handleUpload = async () => {
     if (!title || !content) return alert("제목과 내용을 입력해주세요.");
     setUploading(true);
@@ -104,7 +113,7 @@ export default function AdminPage() {
         fileType = file.type.startsWith("video") ? "video" : "image";
       }
 
-      await addDoc(collection(db, activeTab === "tips" ? "tips" : "news"), {
+      await addDoc(collection(db, activeTab), {
         title,
         content,
         thumbnail: fileUrl,
@@ -126,9 +135,11 @@ export default function AdminPage() {
 
   // --- 글 삭제 ---
   const handleDelete = async (id: string) => {
-    if(!confirm("정말 삭제하시겠습니까?")) return;
+    if(!confirm("정말 삭제하시겠습니까? (복구 불가)")) return;
     try {
-      await deleteDoc(doc(db, activeTab === "tips" ? "tips" : "news", id));
+      // ✅ 현재 탭에 맞는 컬렉션에서 삭제
+      let collectionName = activeTab; 
+      await deleteDoc(doc(db, collectionName, id));
       alert("삭제되었습니다.");
       fetchData(activeTab);
     } catch (e) {
@@ -140,7 +151,7 @@ export default function AdminPage() {
   // --- 렌더링: 로딩 중 ---
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">보안 확인 중...</div>;
 
-  // --- 렌더링: 로그인 안 된 상태 (잠금 화면) ---
+  // --- 렌더링: 로그인 안 된 상태 ---
   if (!isAuthorized) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 px-4">
@@ -192,7 +203,7 @@ export default function AdminPage() {
     );
   }
 
-  // --- 렌더링: 로그인 성공 상태 (관리자 대시보드 - 기존 UI 유지) ---
+  // --- 렌더링: 관리자 대시보드 ---
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
@@ -210,55 +221,108 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* 탭 메뉴 */}
-        <div className="flex gap-4 mb-6">
+        {/* 탭 메뉴: 이용후기 추가됨 */}
+        <div className="flex flex-wrap gap-3 mb-6">
           <button onClick={() => handleTabChange("tips")} className={`px-6 py-3 rounded-xl font-bold transition ${activeTab === "tips" ? "bg-blue-600 text-white shadow-lg" : "bg-white text-gray-500"}`}>
-            💡 거래 꿀팁 관리
+            💡 거래 꿀팁
           </button>
           <button onClick={() => handleTabChange("news")} className={`px-6 py-3 rounded-xl font-bold transition ${activeTab === "news" ? "bg-blue-600 text-white shadow-lg" : "bg-white text-gray-500"}`}>
-            📰 뉴스/이슈 관리
+            📰 뉴스/이슈
+          </button>
+          <button onClick={() => handleTabChange("reviews")} className={`px-6 py-3 rounded-xl font-bold transition ${activeTab === "reviews" ? "bg-indigo-600 text-white shadow-lg" : "bg-white text-gray-500"}`}>
+            💬 이용후기 관리
           </button>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
-          {/* 글쓰기 폼 */}
+          
+          {/* 왼쪽: 글쓰기 폼 (이용후기 탭에서는 숨김) */}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 h-fit">
-            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <Upload size={20} /> 새 글 등록
-            </h2>
-            <div className="space-y-4">
-              <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="제목을 입력하세요" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"/>
-              <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="내용을 입력하세요" className="w-full p-3 border border-gray-300 rounded-lg h-40 resize-none focus:ring-2 focus:ring-blue-500 outline-none"/>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                 <input type="file" onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)} className="hidden" id="file-upload"/>
-                 <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center gap-2 text-gray-500 hover:text-blue-600">
-                    <Upload size={24}/>
-                    {file ? <span className="text-blue-600 font-bold">{file.name}</span> : "사진/동영상 클릭하여 업로드"}
-                 </label>
+            {activeTab === 'reviews' ? (
+              <div className="text-center py-10">
+                <MessageCircle size={48} className="mx-auto text-indigo-200 mb-4"/>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">이용후기 관리</h3>
+                <p className="text-gray-500">
+                  이용후기는 유저들이 작성하는 공간입니다.<br/>
+                  관리자님은 여기서 <span className="text-red-500 font-bold">삭제(관리)</span>만 가능합니다.
+                </p>
               </div>
-              <button onClick={handleUpload} disabled={uploading} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold transition shadow-md disabled:bg-gray-400">
-                {uploading ? "업로드 중..." : "등록하기"}
-              </button>
-            </div>
+            ) : (
+              <>
+                <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                  <Upload size={20} /> 새 글 등록 ({activeTab === 'tips' ? '꿀팁' : '뉴스'})
+                </h2>
+                <div className="space-y-4">
+                  <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="제목을 입력하세요" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"/>
+                  <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="내용을 입력하세요" className="w-full p-3 border border-gray-300 rounded-lg h-40 resize-none focus:ring-2 focus:ring-blue-500 outline-none"/>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                    <input type="file" onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)} className="hidden" id="file-upload"/>
+                    <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center gap-2 text-gray-500 hover:text-blue-600">
+                        <Upload size={24}/>
+                        {file ? <span className="text-blue-600 font-bold">{file.name}</span> : "사진/동영상 클릭하여 업로드"}
+                    </label>
+                  </div>
+                  <button onClick={handleUpload} disabled={uploading} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold transition shadow-md disabled:bg-gray-400">
+                    {uploading ? "업로드 중..." : "등록하기"}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
 
-          {/* 등록된 목록 */}
+          {/* 오른쪽: 등록된 목록 (삭제 기능) */}
           <div className="space-y-4">
-             <h2 className="text-xl font-bold mb-4">등록된 목록 ({list.length})</h2>
-             {list.map((item) => (
-               <div key={item.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex justify-between items-center group">
-                 <div className="flex-1 truncate pr-4">
-                   <h3 className="font-bold text-gray-800 truncate">{item.title}</h3>
-                   <p className="text-gray-400 text-sm">{item.date}</p>
-                 </div>
-                 {item.thumbnail && (
-                   <img src={item.thumbnail} alt="thumb" className="w-12 h-12 rounded-lg object-cover bg-gray-100 mr-4 border border-gray-200"/>
-                 )}
-                 <button onClick={() => handleDelete(item.id)} className="text-red-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition">
-                   <Trash2 size={20}/>
-                 </button>
+             <h2 className="text-xl font-bold mb-4 flex justify-between items-center">
+               <span>
+                 {activeTab === 'reviews' ? '💬 등록된 후기' : '📋 등록된 글'} ({list.length})
+               </span>
+               <span className="text-xs font-normal text-gray-400">최신순 정렬</span>
+             </h2>
+             
+             {list.length === 0 ? (
+               <div className="text-center py-10 text-gray-400 bg-gray-50 rounded-xl border border-dashed">
+                 등록된 데이터가 없습니다.
                </div>
-             ))}
+             ) : (
+               list.map((item) => (
+                 <div key={item.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex justify-between items-center group hover:border-blue-300 transition">
+                   <div className="flex-1 truncate pr-4">
+                     <div className="flex items-center gap-2 mb-1">
+                       {/* 이용후기일 때 서버 뱃지 표시 */}
+                       {activeTab === 'reviews' && item.server && (
+                         <span className="bg-indigo-50 text-indigo-600 text-[10px] px-1.5 py-0.5 rounded font-bold border border-indigo-100">
+                           {item.server}
+                         </span>
+                       )}
+                       <h3 className="font-bold text-gray-800 truncate text-sm md:text-base">{item.title}</h3>
+                     </div>
+                     <div className="text-xs text-gray-400 flex gap-2">
+                       <span>{item.date}</span>
+                       {/* 이용후기일 때 작성자 표시 */}
+                       {activeTab === 'reviews' && item.author && (
+                         <>
+                           <span className="text-gray-300">|</span>
+                           <span>{item.author}</span>
+                         </>
+                       )}
+                     </div>
+                   </div>
+                   
+                   {/* 썸네일 (꿀팁/뉴스) */}
+                   {item.thumbnail && (
+                     <img src={item.thumbnail} alt="thumb" className="w-10 h-10 rounded-lg object-cover bg-gray-100 mr-3 border border-gray-200"/>
+                   )}
+                   
+                   <button 
+                     onClick={() => handleDelete(item.id)}
+                     className="text-gray-300 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition"
+                     title="삭제하기"
+                   >
+                     <Trash2 size={18}/>
+                   </button>
+                 </div>
+               ))
+             )}
           </div>
         </div>
       </div>
