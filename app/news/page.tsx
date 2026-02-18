@@ -4,15 +4,15 @@ import { db } from '../../firebase';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import type { Metadata } from "next";
 
-// 📝 [SEO 입력 구간 2] 뉴스 페이지 제목과 설명
+// ✅ [핵심 수정] 이 페이지는 캐싱하지 않고 항상 최신 데이터를 불러옵니다.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "메이플 이슈 & 뉴스 - 업데이트 및 공지사항",
   description: "메이플스토리 최신 업데이트, 이벤트 소식, 패치 노트 및 점검 정보를 가장 빠르게 확인하세요.",
 };
 
 export default async function NewsPage() {
-  // ✅ [수정 포인트] 여기에 ': any[]'를 붙여서 타입을 명확히 해줬습니다!
-  // 이제 빨간 줄이 사라집니다.
   let newsList: any[] = [];
   
   try {
@@ -47,7 +47,6 @@ export default async function NewsPage() {
           <div className="text-center py-20 text-gray-400">등록된 게시글이 없습니다.</div>
         ) : (
           <ul className="divide-y divide-gray-100">
-            {/* ✅ 혹시 몰라 여기 item에도 :any를 붙여 안전하게 처리했습니다 */}
             {newsList.map((item: any) => (
               <li key={item.id} className="hover:bg-gray-50 transition duration-150">
                 <Link href={`/news/${item.id}`} className="block px-2 py-4 sm:px-4">
@@ -60,7 +59,6 @@ export default async function NewsPage() {
                       </div>
                       <div className="flex items-center text-xs sm:text-sm text-gray-400 gap-3">
                         <div className="flex items-center gap-1.5">
-                          {/* 이미지는 public 폴더에 있어야 함 */}
                           <img src="/favicon.ico" alt="admin" className="w-4 h-4 rounded-full border border-gray-200" />
                           <span className="font-medium text-gray-600">관리자</span>
                         </div>
@@ -73,7 +71,6 @@ export default async function NewsPage() {
                         {item.fileType === 'video' ? (
                           <video src={item.thumbnail} className="w-full h-full object-cover" muted />
                         ) : (
-                          // ✅ alt 태그에 제목 넣음 (SEO 필수)
                           <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
                         )}
                       </div>

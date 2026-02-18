@@ -12,7 +12,7 @@ import {
 import { db, storage, auth } from '../../firebase'; 
 import { Trash2, Upload, LogOut, Lock, ShieldAlert, Key, User as UserIcon, MessageCircle } from "lucide-react";
 
-// 🔒 [보안 개선] .env.local 파일에 NEXT_PUBLIC_ADMIN_EMAIL=your@email.com 설정 권장
+// 🔒 [보안] 관리자 이메일 설정
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "6332159@gmail.com"; 
 
 export default function AdminPage() {
@@ -28,14 +28,15 @@ export default function AdminPage() {
   // --- 데이터 상태 ---
   const [activeTab, setActiveTab] = useState("tips"); // tips | news | reviews
   const [list, setList] = useState<any[]>([]);
-   
+    
   // 글쓰기 폼 상태
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [category, setCategory] = useState("공지"); // ✅ 카테고리 상태 추가
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
-  // ✅ [로직 개선] 데이터 가져오기 함수 (useCallback으로 메모이제이션)
+  // ✅ 데이터 가져오기 함수
   const fetchData = useCallback(async (tab: string) => {
     let collectionName = "tips";
     if (tab === "news") collectionName = "news";
@@ -71,7 +72,7 @@ export default function AdminPage() {
     return () => unsubscribe();
   }, []);
 
-  // 2. 탭 변경 또는 권한 획득 시 데이터 로드 (중복 호출 제거됨)
+  // 2. 탭 변경 또는 권한 획득 시 데이터 로드
   useEffect(() => {
     if (isAuthorized) {
       fetchData(activeTab);
@@ -99,7 +100,10 @@ export default function AdminPage() {
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
-    // ✅ 여기서 fetchData 호출 제거 (useEffect가 처리함)
+    // 탭 변경 시 입력 폼 초기화
+    setTitle("");
+    setContent("");
+    setFile(null);
   };
 
   // --- 글 등록 ---
@@ -120,9 +124,10 @@ export default function AdminPage() {
       await addDoc(collection(db, activeTab), {
         title,
         content,
+        category: activeTab === 'news' ? category : null, // ✅ 뉴스일 경우 카테고리 저장
         thumbnail: fileUrl,
         fileType,
-        date: new Date().toLocaleDateString(),
+        date: new Date().toLocaleDateString('ko-KR'), // 날짜 포맷 통일
         createdAt: new Date()
       });
 
@@ -165,7 +170,7 @@ export default function AdminPage() {
           </div>
           <h1 className="text-2xl font-black text-gray-900 mb-2">관리자 로그인</h1>
           <p className="text-gray-500 text-sm mb-6">지정된 관리자 계정으로 접속하세요.</p>
-           
+            
           <form onSubmit={handleLogin} className="space-y-4 text-left">
             <div>
               <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">이메일</label>
@@ -239,7 +244,7 @@ export default function AdminPage() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
-           
+            
           {/* 왼쪽: 글쓰기 폼 (이용후기 탭에서는 숨김) */}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 h-fit">
             {activeTab === 'reviews' ? (
@@ -257,6 +262,20 @@ export default function AdminPage() {
                   <Upload size={20} /> 새 글 등록 ({activeTab === 'tips' ? '꿀팁' : '뉴스'})
                 </h2>
                 <div className="space-y-4">
+                  {/* ✅ 뉴스 탭일 때만 카테고리 선택 노출 */}
+                  {activeTab === 'news' && (
+                    <select 
+                      value={category} 
+                      onChange={(e) => setCategory(e.target.value)}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    >
+                      <option value="공지">공지</option>
+                      <option value="이벤트">이벤트</option>
+                      <option value="패치">패치</option>
+                      <option value="점검">점검</option>
+                    </select>
+                  )}
+
                   <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="제목을 입력하세요" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"/>
                   <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="내용을 입력하세요" className="w-full p-3 border border-gray-300 rounded-lg h-40 resize-none focus:ring-2 focus:ring-blue-500 outline-none"/>
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
@@ -292,6 +311,12 @@ export default function AdminPage() {
                   <div key={item.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex justify-between items-center group hover:border-blue-300 transition">
                     <div className="flex-1 truncate pr-4">
                       <div className="flex items-center gap-2 mb-1">
+                        {/* 카테고리 뱃지 표시 */}
+                        {item.category && (
+                           <span className="bg-gray-100 text-gray-600 text-[10px] px-1.5 py-0.5 rounded font-bold border border-gray-200">
+                             {item.category}
+                           </span>
+                        )}
                         {activeTab === 'reviews' && item.server && (
                           <span className="bg-indigo-50 text-indigo-600 text-[10px] px-1.5 py-0.5 rounded font-bold border border-indigo-100">
                             {item.server}

@@ -2,17 +2,16 @@ import React from "react";
 import Link from "next/link";
 import { 
   ShieldCheck, Zap, TrendingUp, Star, 
-  MessageCircle, FileText, ArrowRight, CheckCircle, Bell, Lightbulb
+  MessageCircle, FileText, ArrowRight, CheckCircle, Bell, Lightbulb, Megaphone
 } from "lucide-react";
 import { db } from '../firebase'; 
 import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
 import FaqSection from "@/app/components/FaqSection"; 
 import type { Metadata } from "next";
 
-// ✅ 추가: 메인 페이지가 캐싱되지 않고 항상 최신 데이터를 불러오도록 강제 설정
+// ✅ 항상 최신 데이터를 불러오도록 설정
 export const dynamic = "force-dynamic";
 
-// 📝 [SEO 입력 구간]
 export const metadata: Metadata = {
   title: "메이플급처 - 안전하고 빠른 메이플스토리 아이템/메소 거래소",
   description: "스카니아, 루나, 엘리시움, 크로아 전 서버 메소 및 아이템 최고가 매입, 최저가 판매. 24시간 실시간 시세 확인 및 즉시 거래 가능.",
@@ -25,6 +24,7 @@ export default async function Home() {
   // ✅ 서버에서 데이터 직접 가져오기
   let recentReviews: any[] = [];
   let recentTips: any[] = [];
+  let recentNews: any[] = [];
 
   try {
     // 1. 최근 후기 4개
@@ -36,9 +36,24 @@ export default async function Home() {
     const tipQ = query(collection(db, "tips"), orderBy("createdAt", "desc"), limit(3));
     const tipSnap = await getDocs(tipQ);
     recentTips = tipSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    // 3. ✅ [추가] 최근 뉴스 5개
+    const newsQ = query(collection(db, "news"), orderBy("createdAt", "desc"), limit(5));
+    const newsSnap = await getDocs(newsQ);
+    recentNews = newsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
   } catch (e) {
     console.error("데이터 로딩 실패", e);
   }
+
+  // 카테고리별 색상 (News용)
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case "공지": return "text-red-500";
+      case "이벤트": return "text-blue-600";
+      default: return "text-gray-500";
+    }
+  };
 
   return (
     <div className="flex flex-col gap-12 pb-20">
@@ -143,7 +158,54 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 4. 이용 팁 & 공지사항 섹션 */}
+      {/* ✅ [추가됨] 4. NEWS 섹션 (팁 위, 후기 위) */}
+      <section className="max-w-7xl mx-auto px-4 w-full">
+        <div className="flex justify-between items-end mb-6">
+          <div>
+            <span className="text-red-500 font-bold text-sm tracking-wider flex items-center gap-1 mb-1">
+              <Megaphone size={14} /> LATEST NEWS
+            </span>
+            <h2 className="text-2xl font-bold text-gray-900">메이플 이슈 & 소식</h2>
+          </div>
+          <Link href="/news" className="text-sm font-bold text-gray-500 hover:text-blue-600 flex items-center gap-1">
+            전체보기 <ArrowRight size={14}/>
+          </Link>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+          {recentNews.length === 0 ? (
+            <div className="p-8 text-center text-gray-400">
+              등록된 뉴스가 없습니다.
+            </div>
+          ) : (
+            <ul className="divide-y divide-gray-100">
+              {recentNews.map((item) => (
+                <li key={item.id} className="hover:bg-gray-50 transition">
+                  <Link href={`/news/${item.id}`} className="block p-4 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <span className={`text-xs font-bold whitespace-nowrap px-2 py-1 rounded bg-gray-100 ${getCategoryColor(item.category)}`}>
+                        {item.category || "공지"}
+                      </span>
+                      <span className="text-gray-800 font-medium truncate">
+                        {item.title}
+                      </span>
+                      {/* N 아이콘 */}
+                      {item.date === new Date().toLocaleDateString('ko-KR') && (
+                        <span className="w-4 h-4 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-sm font-bold flex-shrink-0">N</span>
+                      )}
+                    </div>
+                    <span className="text-xs text-gray-400 whitespace-nowrap hidden sm:block">
+                      {item.date}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
+
+      {/* 5. 이용 팁 & 공지사항 섹션 */}
       <section className="max-w-7xl mx-auto px-4 w-full">
         <div className="flex justify-between items-end mb-6">
           <div>
@@ -164,7 +226,6 @@ export default async function Home() {
             </div>
           ) : (
             recentTips.map((tip) => (
-              // 🛠️ [수정됨] div를 Link로 변경하여 클릭 시 상세 페이지로 이동 (/tip/글아이디)
               <Link 
                 href={`/tip/${tip.id}`} 
                 key={tip.id} 
@@ -200,7 +261,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 5. 이용후기 미리보기 */}
+      {/* 6. 이용후기 미리보기 */}
       <section className="max-w-7xl mx-auto px-4 w-full mb-10">
         <div className="flex justify-between items-end mb-8 border-b border-gray-200 pb-4">
           <div>
@@ -219,9 +280,8 @@ export default async function Home() {
             </div>
           ) : (
             recentReviews.map((review) => (
-              // 🛠️ [수정됨] div를 Link로 변경하여 클릭 시 상세 페이지로 이동 (/reviews/글아이디)
               <Link 
-                href={`/reviews/${review.id}`} 
+                href={`/reviews/${review.id}`}
                 key={review.id} 
                 className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition cursor-pointer hover:-translate-y-1 block"
               >
@@ -247,7 +307,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 6. 자주 묻는 질문(FAQ) */}
+      {/* 7. 자주 묻는 질문(FAQ) */}
       <FaqSection />
 
     </div>
