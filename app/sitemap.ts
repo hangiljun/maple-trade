@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://www.메이플급처.com'
+  const baseUrl = 'https://www.xn--kj0b36u99jp4ed8l.com'
 
   return [
     {
