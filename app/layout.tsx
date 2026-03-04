@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
-import { Menu, MessageCircle } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -72,11 +72,6 @@ export default function RootLayout({
         <header className="border-b border-gray-200 bg-white sticky top-0 z-50 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col items-center justify-center relative">
             
-            {/* 햄버거 메뉴 (모바일) */}
-            <div className="absolute left-4 md:hidden">
-              <Menu className="w-6 h-6 text-gray-600" />
-            </div>
-
             {/* 1. 로고 (가운데 정렬) */}
             <Link href="/" className="text-3xl md:text-4xl font-black text-gray-900 tracking-tighter hover:opacity-80 transition">
               메이플<span className="text-blue-600">급처</span>

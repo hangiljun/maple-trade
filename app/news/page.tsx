@@ -47,7 +47,7 @@ export default async function NewsPage() {
           <div className="text-center py-20 text-gray-400">등록된 게시글이 없습니다.</div>
         ) : (
           <ul className="divide-y divide-gray-100">
-            {newsList.map((item: any) => (
+            {newsList.map((item) => (
               <li key={item.id} className="hover:bg-gray-50 transition duration-150">
                 <Link href={`/news/${item.id}`} className="block px-2 py-4 sm:px-4">
                   <div className="flex items-start justify-between gap-4">
@@ -82,7 +82,6 @@ export default async function NewsPage() {
           </ul>
         )}
       </div>
-      <div className="border-t border-gray-200"></div>
     </div>
   );
 }
