@@ -20,7 +20,7 @@ export default function ImageViewer({ src, alt }: Props) {
         <img
           src={src}
           alt={alt}
-          className="max-w-full max-h-[500px] mx-auto rounded-xl border border-gray-100 object-contain block"
+          className="max-w-full mx-auto rounded-xl border border-gray-100 block"
         />
         {/* 확대 힌트 */}
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition bg-black/20 rounded-xl">
