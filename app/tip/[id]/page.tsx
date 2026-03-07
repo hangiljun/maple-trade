@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Calendar, User } from 'lucide-react';
 import type { Metadata } from 'next';
+import ImageViewer from '../ImageViewer';
 
 type Props = { params: { id: string } };
 
@@ -48,11 +49,13 @@ export default async function TipDetail({ params }: Props) {
 
         <div className="p-8 min-h-[300px] text-gray-800 leading-relaxed whitespace-pre-wrap">
           {post.thumbnail && (
-            <img
-              src={post.thumbnail}
-              alt={`메이플급처 꿀팁 - ${post.title}`}
-              className="w-full max-w-lg rounded-lg mb-6 border border-gray-100"
-            />
+            <div className="mb-6 text-center">
+              {post.fileType === 'video' ? (
+                <video src={post.thumbnail} controls className="max-w-full max-h-[70vh] mx-auto rounded-xl border border-gray-100" />
+              ) : (
+                <ImageViewer src={post.thumbnail} alt={`메이플급처 꿀팁 - ${post.title}`} />
+              )}
+            </div>
           )}
           {post.content}
         </div>

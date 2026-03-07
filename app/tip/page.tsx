@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, ShieldCheck, MessageCircle, CreditCard, Gift, FileText } from "lucide-react";
 import { db } from '../../firebase';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+import ImageViewer from "./ImageViewer";
 
 export const dynamic = "force-dynamic";
 
@@ -123,11 +124,11 @@ export default async function TipPage() {
                 </div>
 
                 {item.thumbnail && (
-                  <div className="mb-6 rounded-xl overflow-hidden border border-gray-100 bg-black/5">
+                  <div className="mb-6 rounded-xl overflow-hidden border border-gray-100 bg-gray-50 text-center">
                     {item.fileType === 'video' ? (
-                      <video src={item.thumbnail} controls className="w-full max-h-[400px] object-contain mx-auto" />
+                      <video src={item.thumbnail} controls className="max-w-full max-h-[500px] mx-auto" />
                     ) : (
-                      <img src={item.thumbnail} alt={`메이플급처 꿀팁 - ${item.title}`} className="w-full max-h-[400px] object-contain mx-auto" />
+                      <ImageViewer src={item.thumbnail} alt={`메이플급처 꿀팁 - ${item.title}`} />
                     )}
                   </div>
                 )}
