@@ -53,6 +53,22 @@ export const metadata: Metadata = {
   },
 };
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "name": "메이플급처",
+  "alternateName": ["메이플급처템", "메이플 급처", "메이플스토리 급처"],
+  "description": "메이플스토리 아이템 및 메소 최고가 구입, 최저가 판매. 스카니아, 루나, 엘리시움 등 전 서버 24시간 안전거래.",
+  "url": "https://www.메이플급처.com",
+  "openingHours": "Mo-Su 00:00-24:00",
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "contactType": "customer service",
+    "availableLanguage": "Korean",
+    "url": "https://open.kakao.com/o/sKg86b7f"
+  },
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -61,11 +77,16 @@ export default function RootLayout({
   const today = new Date();
   const dateString = `${today.getMonth() + 1}월 ${today.getDate()}일`;
 
-  // ✅ 카톡 링크
-  const KAKAO_LINK = "https://open.kakao.com/o/sKg86b7f"; 
+  const KAKAO_LINK = "https://open.kakao.com/o/sKg86b7f";
 
   return (
     <html lang="ko">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body className={`${inter.className} min-h-screen flex flex-col`}>
         
         {/* --- 헤더 시작 --- */}
