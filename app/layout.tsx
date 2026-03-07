@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/og-image.png", 
+        url: "/opengraph-image.png",
         width: 1200,
         height: 630,
         alt: "메이플급처 대표 이미지",
