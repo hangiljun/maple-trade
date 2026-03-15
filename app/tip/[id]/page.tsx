@@ -17,6 +17,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${data.title} - 메이플급처 이용안내`,
     description: `메이플급처 안전거래 가이드. ${data.content?.slice(0, 120)}`,
     keywords: ["메이플급처 이용안내", "메이플 거래 방법", "메이플 안전거래 팁", data.title],
+    openGraph: {
+      title: `${data.title} - 메이플급처 이용안내`,
+      description: `메이플급처 안전거래 가이드. ${data.content?.slice(0, 120)}`,
+      ...(data.thumbnail && data.fileType !== "video"
+        ? { images: [{ url: data.thumbnail, width: 1200, height: 630, alt: data.title }] }
+        : {}),
+    },
   };
 }
 

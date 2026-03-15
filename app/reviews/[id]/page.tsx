@@ -16,6 +16,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${data.title} - 메이플급처 이용후기`,
     description: `${data.author}님의 메이플급처 거래 후기. ${data.content?.slice(0, 100)}`,
+    openGraph: {
+      title: `${data.title} - 메이플급처 이용후기`,
+      description: `${data.author}님의 메이플급처 거래 후기. ${data.content?.slice(0, 100)}`,
+    },
   };
 }
 

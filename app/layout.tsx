@@ -138,8 +138,51 @@ export default function RootLayout({
           {children}
         </main>
 
-        <footer className="bg-gray-900 text-gray-400 py-10 text-center text-sm">
-          <p>COPYRIGHT © 메이플급처 ALL RIGHTS RESERVED.</p>
+        <footer className="bg-gray-900 text-gray-400 text-sm">
+          <div className="max-w-7xl mx-auto px-4 py-10 flex flex-col md:flex-row justify-between gap-8">
+            {/* 브랜드 */}
+            <div>
+              <p className="text-white text-xl font-black tracking-tighter mb-2">
+                메이플<span className="text-blue-400">급처</span>
+              </p>
+              <p className="text-gray-500 text-xs leading-relaxed">
+                메이플스토리 아이템·메소 안전거래<br />
+                365일 24시간 운영
+              </p>
+              <a
+                href={KAKAO_LINK}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 mt-3 bg-[#FEE500] text-[#3A1D1D] px-3 py-1.5 rounded-full font-bold text-xs hover:bg-yellow-400 transition"
+              >
+                <MessageCircle size={12} fill="#3A1D1D" /> 카톡 문의
+              </a>
+            </div>
+
+            {/* 메뉴 */}
+            <div className="flex gap-12">
+              <div>
+                <p className="text-white font-bold mb-3 text-xs uppercase tracking-wider">서비스</p>
+                <ul className="space-y-2 text-gray-500">
+                  <li><Link href="/" className="hover:text-white transition">메인</Link></li>
+                  <li><Link href="/tip" className="hover:text-white transition">이용안내</Link></li>
+                  <li><Link href="/reviews" className="hover:text-white transition">이용후기</Link></li>
+                  <li><Link href="/news" className="hover:text-white transition">메이플 이슈</Link></li>
+                </ul>
+              </div>
+              <div>
+                <p className="text-white font-bold mb-3 text-xs uppercase tracking-wider">법적고지</p>
+                <ul className="space-y-2 text-gray-500">
+                  <li><Link href="/terms" className="hover:text-white transition">이용약관</Link></li>
+                  <li><Link href="/privacy" className="hover:text-white transition">개인정보처리방침</Link></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-800 py-4 text-center text-xs text-gray-600">
+            COPYRIGHT © 메이플급처 ALL RIGHTS RESERVED.
+          </div>
         </footer>
 
         {/* 우측 하단 둥둥 떠다니는 카톡 버튼 */}

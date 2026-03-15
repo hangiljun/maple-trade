@@ -35,9 +35,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
-    const [newsSnap, tipsSnap] = await Promise.all([
+    const [newsSnap, tipsSnap, reviewsSnap] = await Promise.all([
       getDocs(query(collection(db, 'news'), orderBy('createdAt', 'desc'))),
       getDocs(query(collection(db, 'tips'), orderBy('createdAt', 'desc'))),
+      getDocs(query(collection(db, 'reviews'), orderBy('createdAt', 'desc'))),
     ]);
 
     const newsRoutes: MetadataRoute.Sitemap = newsSnap.docs.map((doc) => ({
@@ -54,7 +55,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }));
 
-    return [...staticRoutes, ...newsRoutes, ...tipRoutes];
+    const reviewRoutes: MetadataRoute.Sitemap = reviewsSnap.docs.map((doc) => ({
+      url: `${BASE_URL}/reviews/${doc.id}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    }));
+
+    return [...staticRoutes, ...newsRoutes, ...tipRoutes, ...reviewRoutes];
   } catch {
     return staticRoutes;
   }
