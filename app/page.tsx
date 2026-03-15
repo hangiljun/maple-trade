@@ -181,22 +181,30 @@ export default async function Home() {
             <ul className="divide-y divide-gray-100">
               {recentNews.map((item) => (
                 <li key={item.id} className="hover:bg-gray-50 transition">
-                  <Link href={`/news/${item.id}`} className="block p-4 flex items-center justify-between gap-4">
+                  <Link href={`/news/${item.id}`} className="flex items-center justify-between gap-4 p-4">
                     <div className="flex items-center gap-3 overflow-hidden">
-                      <span className={`text-xs font-bold whitespace-nowrap px-2 py-1 rounded bg-gray-100 ${getCategoryColor(item.category)}`}>
+                      <span className={`text-xs font-bold whitespace-nowrap px-2 py-1 rounded bg-gray-100 flex-shrink-0 ${getCategoryColor(item.category)}`}>
                         {item.category || "공지"}
                       </span>
                       <span className="text-gray-800 font-medium truncate">
                         {item.title}
                       </span>
-                      {/* N 아이콘 */}
                       {item.date === new Date().toLocaleDateString('ko-KR') && (
                         <span className="w-4 h-4 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-sm font-bold flex-shrink-0">N</span>
                       )}
                     </div>
-                    <span className="text-xs text-gray-400 whitespace-nowrap hidden sm:block">
-                      {item.date}
-                    </span>
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      <span className="text-xs text-gray-400 whitespace-nowrap hidden sm:block">{item.date}</span>
+                      {item.thumbnail && (
+                        <div className="w-16 h-12 rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+                          {item.fileType === "video" ? (
+                            <video src={item.thumbnail} className="w-full h-full object-cover" muted />
+                          ) : (
+                            <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </Link>
                 </li>
               ))}
