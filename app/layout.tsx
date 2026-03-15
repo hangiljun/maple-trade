@@ -170,13 +170,6 @@ export default function RootLayout({
                   <li><Link href="/news" className="hover:text-white transition">메이플 이슈</Link></li>
                 </ul>
               </div>
-              <div>
-                <p className="text-white font-bold mb-3 text-xs uppercase tracking-wider">법적고지</p>
-                <ul className="space-y-2 text-gray-500">
-                  <li><Link href="/terms" className="hover:text-white transition">이용약관</Link></li>
-                  <li><Link href="/privacy" className="hover:text-white transition">개인정보처리방침</Link></li>
-                </ul>
-              </div>
             </div>
           </div>
 
