@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import ImageViewer from "../../tip/ImageViewer";
 
 type Props = { params: { id: string } };
 
@@ -49,11 +50,13 @@ export default async function NewsDetailPage({ params }: Props) {
 
         <div className="p-8">
           {news.thumbnail && (
-            <div className="mb-8 rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+            <div className="mb-8">
               {news.fileType === 'video' ? (
-                <video src={news.thumbnail} controls className="w-full max-h-[500px] bg-black" />
+                <div className="rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+                  <video src={news.thumbnail} controls className="w-full max-h-[500px] bg-black" />
+                </div>
               ) : (
-                <img src={news.thumbnail} alt={news.title || "상세 이미지"} className="w-full h-auto object-contain max-h-[600px]" />
+                <ImageViewer src={news.thumbnail} alt={news.title || "상세 이미지"} />
               )}
             </div>
           )}
