@@ -243,7 +243,7 @@ export default async function Home() {
                     <div className="flex items-center gap-3 flex-shrink-0">
                       <span className="text-xs text-gray-400 whitespace-nowrap hidden sm:block">{item.date}</span>
                       {item.thumbnail && (
-                        <div className="w-16 h-12 rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+                        <div className="relative w-16 h-12 rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
                           {item.fileType === "video" ? (
                             <video src={item.thumbnail} className="w-full h-full object-cover" muted />
                           ) : (

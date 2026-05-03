@@ -76,7 +76,7 @@ export default async function NewsPage() {
                       </div>
                     </div>
                     {item.thumbnail && (
-                      <div className="flex-shrink-0 w-20 h-16 sm:w-28 sm:h-20 rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-gray-50">
+                      <div className="relative flex-shrink-0 w-20 h-16 sm:w-28 sm:h-20 rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-gray-50">
                         {item.fileType === 'video' ? (
                           <video src={item.thumbnail} className="w-full h-full object-cover" muted />
                         ) : (
