@@ -243,11 +243,11 @@ export default async function Home() {
                     <div className="flex items-center gap-3 flex-shrink-0">
                       <span className="text-xs text-gray-400 whitespace-nowrap hidden sm:block">{item.date}</span>
                       {item.thumbnail && (
-                        <div className="relative w-16 h-12 rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+                        <div className="w-16 h-12 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex-shrink-0">
                           {item.fileType === "video" ? (
                             <video src={item.thumbnail} className="w-full h-full object-cover" muted />
                           ) : (
-                            <Image src={item.thumbnail!} alt={item.title} fill className="object-cover" />
+                            <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
                           )}
                         </div>
                       )}
@@ -286,9 +286,9 @@ export default async function Home() {
                 key={tip.id} 
                 className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition cursor-pointer flex flex-col h-full"
               >
-                <div className="h-40 bg-gray-100 relative overflow-hidden">
+                <div className="h-40 bg-gray-100 overflow-hidden">
                   {tip.thumbnail ? (
-                    <Image src={tip.thumbnail} alt={tip.title} fill className="object-cover group-hover:scale-105 transition duration-500" />
+                    <img src={tip.thumbnail} alt={tip.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-blue-50 text-blue-200">
                       <Lightbulb size={48} />
