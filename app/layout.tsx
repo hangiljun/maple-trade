@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
+import { KAKAO_LINK } from "@/lib/constants";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -76,8 +77,6 @@ export default function RootLayout({
 }>) {
   const today = new Date();
   const dateString = `${today.getMonth() + 1}월 ${today.getDate()}일`;
-
-  const KAKAO_LINK = "https://open.kakao.com/o/sKg86b7f";
 
   return (
     <html lang="ko">

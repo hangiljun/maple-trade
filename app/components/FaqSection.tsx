@@ -1,9 +1,9 @@
 "use client"; // ✅ 이 부분만 클라이언트에서 작동합니다.
 import React, { useState } from "react";
 import { HelpCircle, ChevronDown, ChevronUp, MessageCircle } from "lucide-react";
+import { KAKAO_LINK } from "@/lib/constants";
 
 export default function FaqSection() {
-  const KAKAO_LINK = "https://open.kakao.com/o/sKg86b7f";
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const FAQS = [

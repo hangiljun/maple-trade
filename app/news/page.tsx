@@ -1,24 +1,33 @@
 import React from "react";
 import Link from 'next/link';
+import Image from 'next/image';
 import { db } from '../../firebase';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import type { Metadata } from "next";
 
-// ✅ [핵심 수정] 이 페이지는 캐싱하지 않고 항상 최신 데이터를 불러옵니다.
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "메이플 이슈 & 뉴스 - 업데이트 및 공지사항",
   description: "메이플스토리 최신 업데이트, 이벤트 소식, 패치 노트 및 점검 정보를 가장 빠르게 확인하세요.",
 };
 
+interface NewsItem {
+  id: string;
+  title: string;
+  category: string;
+  date: string;
+  thumbnail?: string;
+  fileType?: string;
+}
+
 export default async function NewsPage() {
-  let newsList: any[] = [];
-  
+  let newsList: NewsItem[] = [];
+
   try {
     const q = query(collection(db, "news"), orderBy("createdAt", "desc"));
     const snapshot = await getDocs(q);
-    newsList = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    newsList = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as NewsItem));
   } catch (error) {
     console.error("뉴스 로딩 실패:", error);
   }
@@ -59,7 +68,7 @@ export default async function NewsPage() {
                       </div>
                       <div className="flex items-center text-xs sm:text-sm text-gray-400 gap-3">
                         <div className="flex items-center gap-1.5">
-                          <img src="/favicon.ico" alt="admin" className="w-4 h-4 rounded-full border border-gray-200" />
+                          <Image src="/favicon.ico" alt="admin" width={16} height={16} className="rounded-full border border-gray-200" />
                           <span className="font-medium text-gray-600">관리자</span>
                         </div>
                         <span className="w-px h-3 bg-gray-300"></span>
@@ -71,7 +80,7 @@ export default async function NewsPage() {
                         {item.fileType === 'video' ? (
                           <video src={item.thumbnail} className="w-full h-full object-cover" muted />
                         ) : (
-                          <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
+                          <Image src={item.thumbnail!} alt={item.title} fill className="object-cover" />
                         )}
                       </div>
                     )}

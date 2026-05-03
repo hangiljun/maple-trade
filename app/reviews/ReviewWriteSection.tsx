@@ -17,13 +17,16 @@ export default function ReviewWriteSection() {
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async () => {
-    if (!inputTitle || !inputContent || !inputAuthor) return alert("내용을 입력해주세요.");
+    const title = inputTitle.trim().slice(0, 100);
+    const content = inputContent.trim().slice(0, 2000);
+    const author = inputAuthor.trim().slice(0, 20);
+    if (!title || !content || !author) return alert("내용을 입력해주세요.");
     setSubmitting(true);
     try {
       await addDoc(collection(db, "reviews"), {
-        title: inputTitle,
-        content: inputContent,
-        author: inputAuthor,
+        title,
+        content,
+        author,
         server: inputServer,
         date: new Date().toLocaleDateString('ko-KR', { year: '2-digit', month: '2-digit', day: '2-digit' }),
         createdAt: serverTimestamp(),

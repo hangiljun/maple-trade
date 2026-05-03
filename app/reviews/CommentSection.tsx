@@ -26,15 +26,18 @@ export default function CommentSection({ reviewId, initialComments }: Props) {
   }, [reviewId]);
 
   const handleSubmit = async () => {
-    if (!author || !content) return alert("내용을 입력해주세요.");
+    const trimmedAuthor = author.trim().slice(0, 20);
+    const trimmedContent = content.trim().slice(0, 500);
+    if (!trimmedAuthor || !trimmedContent) return alert("내용을 입력해주세요.");
     const newComment: Comment = {
-      author,
-      content,
+      author: trimmedAuthor,
+      content: trimmedContent,
       date: new Date().toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' }),
     };
     try {
       await updateDoc(doc(db, "reviews", reviewId), { comments: arrayUnion(newComment) });
       setComments(prev => [...prev, newComment]);
+      setAuthor("");
       setContent("");
     } catch {
       alert("댓글 등록 실패");

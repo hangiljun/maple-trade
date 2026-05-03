@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git push *)",
+      "Read(//c//**)",
+      "Read(//c/mapleitem/**)"
+    ]
+  }
+}

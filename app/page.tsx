@@ -1,16 +1,44 @@
 import React from "react";
 import Link from "next/link";
-import { 
-  ShieldCheck, Zap, TrendingUp, Star, 
+import Image from "next/image";
+import {
+  ShieldCheck, Zap, TrendingUp, Star,
   MessageCircle, FileText, ArrowRight, CheckCircle, Bell, Lightbulb, Megaphone
 } from "lucide-react";
 import { db } from '../firebase'; 
 import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
-import FaqSection from "@/app/components/FaqSection"; 
+import FaqSection from "@/app/components/FaqSection";
 import type { Metadata } from "next";
+import { KAKAO_LINK } from "@/lib/constants";
 
-// ✅ 항상 최신 데이터를 불러오도록 설정
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
+
+interface Review {
+  id: string;
+  title: string;
+  content: string;
+  author: string;
+  date: string;
+  server?: string;
+}
+
+interface Tip {
+  id: string;
+  title: string;
+  content: string;
+  date: string;
+  thumbnail?: string;
+  fileType?: string;
+}
+
+interface NewsItem {
+  id: string;
+  title: string;
+  category: string;
+  date: string;
+  thumbnail?: string;
+  fileType?: string;
+}
 
 export const metadata: Metadata = {
   title: "메이플급처 - 안전하고 빠른 메이플스토리 아이템/메소 거래소",
@@ -19,28 +47,23 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const KAKAO_LINK = "https://open.kakao.com/o/sKg86b7f";
-  
-  // ✅ 서버에서 데이터 직접 가져오기
-  let recentReviews: any[] = [];
-  let recentTips: any[] = [];
-  let recentNews: any[] = [];
+  let recentReviews: Review[] = [];
+  let recentTips: Tip[] = [];
+  let recentNews: NewsItem[] = [];
 
   try {
     // 1. 최근 후기 4개
     const reviewQ = query(collection(db, "reviews"), orderBy("createdAt", "desc"), limit(4));
     const reviewSnap = await getDocs(reviewQ);
-    recentReviews = reviewSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    recentReviews = reviewSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Review));
 
-    // 2. 최근 팁/공지 3개
     const tipQ = query(collection(db, "tips"), orderBy("createdAt", "desc"), limit(3));
     const tipSnap = await getDocs(tipQ);
-    recentTips = tipSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    recentTips = tipSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Tip));
 
-    // 3. ✅ [추가] 최근 뉴스 5개
     const newsQ = query(collection(db, "news"), orderBy("createdAt", "desc"), limit(5));
     const newsSnap = await getDocs(newsQ);
-    recentNews = newsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    recentNews = newsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as NewsItem));
 
   } catch (e) {
     console.error("데이터 로딩 실패", e);
@@ -130,10 +153,12 @@ export default async function Home() {
         </div>
         <div className="flex justify-center">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden max-w-sm w-full">
-            <img
+            <Image
               src="/business-license.jpg"
               alt="사업자 등록증"
-              className="w-full object-contain"
+              width={400}
+              height={566}
+              className="w-full h-auto object-contain"
             />
             <div className="px-5 py-4 border-t border-gray-100 flex items-center gap-2">
               <ShieldCheck size={18} className="text-blue-600 flex-shrink-0" />
@@ -222,7 +247,7 @@ export default async function Home() {
                           {item.fileType === "video" ? (
                             <video src={item.thumbnail} className="w-full h-full object-cover" muted />
                           ) : (
-                            <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
+                            <Image src={item.thumbnail!} alt={item.title} fill className="object-cover" />
                           )}
                         </div>
                       )}
@@ -263,7 +288,7 @@ export default async function Home() {
               >
                 <div className="h-40 bg-gray-100 relative overflow-hidden">
                   {tip.thumbnail ? (
-                    <img src={tip.thumbnail} alt={tip.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500"/>
+                    <Image src={tip.thumbnail} alt={tip.title} fill className="object-cover group-hover:scale-105 transition duration-500" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-blue-50 text-blue-200">
                       <Lightbulb size={48} />

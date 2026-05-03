@@ -5,7 +5,7 @@ import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import type { Metadata } from "next";
 import ReviewWriteSection from "./ReviewWriteSection";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "이용후기 - 메이플급처 실거래 후기",
