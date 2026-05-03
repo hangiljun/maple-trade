@@ -82,32 +82,42 @@ export default async function Home() {
     <div className="flex flex-col gap-12 pb-20">
         
       {/* 1. 홍보 배너 구역 */}
-      <section className="bg-gradient-to-r from-blue-600 to-indigo-700 py-20 text-center text-white relative overflow-hidden">
+      <section className="bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 py-20 text-center text-white relative overflow-hidden">
+        {/* 배경 블러 원 */}
         <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-400/10 rounded-full translate-x-1/3 translate-y-1/3 blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/4 w-48 h-48 bg-violet-400/10 rounded-full blur-2xl"></div>
 
-        <div className="max-w-4xl mx-auto px-4 relative z-10 animate-fade-in-up">
+        {/* 떠다니는 단풍잎 장식 */}
+        <span className="absolute top-8 left-[8%] text-3xl opacity-20 animate-bounce" style={{animationDuration:"3s"}}>🍁</span>
+        <span className="absolute top-16 right-[10%] text-2xl opacity-15 animate-bounce" style={{animationDuration:"4s", animationDelay:"0.5s"}}>🍁</span>
+        <span className="absolute bottom-12 left-[15%] text-xl opacity-20 animate-bounce" style={{animationDuration:"3.5s", animationDelay:"1s"}}>🍁</span>
+        <span className="absolute bottom-8 right-[18%] text-3xl opacity-15 animate-bounce" style={{animationDuration:"4.5s", animationDelay:"0.3s"}}>🍁</span>
+        <span className="absolute top-1/3 left-[3%] text-lg opacity-10 animate-bounce" style={{animationDuration:"5s", animationDelay:"1.5s"}}>🍁</span>
+        <span className="absolute top-1/4 right-[4%] text-2xl opacity-10 animate-bounce" style={{animationDuration:"3.8s", animationDelay:"0.8s"}}>🍁</span>
+
+        <div className="max-w-4xl mx-auto px-4 relative z-10">
           <h1 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">
             메이플스토리 급처템 <br/> 가장 안전하고 빠르게 정리하세요
           </h1>
           <p className="text-blue-100 mb-8 text-lg">
             실시간 경매장 매물로 시세 측정 합니다.
           </p>
-            
-          <div className="inline-block border-4 border-pink-500 rounded-xl p-4 bg-black/50 backdrop-blur-sm mb-10">
+
+          <div className="inline-block border-4 border-pink-500 rounded-xl p-4 bg-black/50 backdrop-blur-sm mb-8">
             <p className="neon-text text-xl md:text-2xl font-mono">
               365일 24시간 메이플 거래 대기중
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row justify-center gap-3 w-full max-w-2xl mx-auto px-4">
+          <div className="flex flex-col sm:flex-row justify-center gap-3 w-full max-w-2xl mx-auto px-4 mb-10">
              <Link href="/tip" className="flex-1 bg-white text-blue-700 border-2 border-white px-4 py-3.5 rounded-full font-bold hover:bg-gray-100 transition shadow-lg flex items-center justify-center gap-2 text-sm md:text-base">
                <FileText size={18} /> 거래 방법
              </Link>
              <Link href="/reviews" className="flex-1 bg-white/10 backdrop-blur-md border-2 border-white text-white px-4 py-3.5 rounded-full font-bold hover:bg-white/20 transition shadow-lg flex items-center justify-center gap-2 text-sm md:text-base">
                <Star size={18} className="text-yellow-300 fill-yellow-300"/> 이용 후기
              </Link>
-             <a 
+             <a
                href={KAKAO_LINK}
                target="_blank"
                rel="noreferrer"
@@ -115,6 +125,21 @@ export default async function Home() {
              >
                <MessageCircle size={18} fill="#3A1D1D" /> 카톡 문의
              </a>
+          </div>
+
+          {/* 신뢰 배지 */}
+          <div className="flex flex-wrap justify-center gap-3">
+            {[
+              { icon: "✅", text: "사업자 등록 완료" },
+              { icon: "🔍", text: "더치트 사기 이력 조회" },
+              { icon: "⚡", text: "평균 5분 거래" },
+              { icon: "💰", text: "수수료 0%" },
+            ].map((badge) => (
+              <div key={badge.text} className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 text-sm font-semibold">
+                <span>{badge.icon}</span>
+                <span>{badge.text}</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
