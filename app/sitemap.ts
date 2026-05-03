@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next'
 import { db } from '../firebase';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 
-const BASE_URL = 'https://www.xn--kj0b36u99jp4ed8l.com';
+const BASE_URL = 'https://www.메이플급처.com';
 
 export const dynamic = 'force-dynamic';
 

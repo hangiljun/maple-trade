@@ -6,6 +6,6 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: '*',
       allow: '/',
     },
-    sitemap: 'https://www.xn--kj0b36u99jp4ed8l.com/sitemap.xml',
+    sitemap: 'https://www.메이플급처.com/sitemap.xml',
   }
 }
