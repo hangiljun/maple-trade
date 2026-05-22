@@ -67,7 +67,7 @@ export default async function NewsPage() {
                       </div>
                       <div className="flex items-center text-xs sm:text-sm text-gray-400 gap-3">
                         <div className="flex items-center gap-1.5">
-                          <Image src="/favicon.ico" alt="admin" width={16} height={16} className="rounded-full border border-gray-200" />
+                          <img src="/favicon.ico" alt="admin" width={16} height={16} className="rounded-full border border-gray-200" />
                           <span className="font-medium text-gray-600">관리자</span>
                         </div>
                         <span className="w-px h-3 bg-gray-300"></span>
