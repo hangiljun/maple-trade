@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import ImageViewer from "../../tip/ImageViewer";
+import LinkifyText from '@/app/components/LinkifyText';
 
 type Props = { params: { id: string } };
 
@@ -60,7 +61,9 @@ export default async function NewsDetailPage({ params }: Props) {
               )}
             </div>
           )}
-          <div className="text-gray-800 leading-relaxed whitespace-pre-line text-lg">{news.content}</div>
+          <div className="text-gray-800 leading-relaxed whitespace-pre-line text-lg">
+            <LinkifyText text={news.content ?? ''} />
+          </div>
         </div>
       </article>
     </div>

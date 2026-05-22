@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft, Star, Calendar, MapPin, Eye } from 'lucide-react';
 import type { Metadata } from 'next';
 import CommentSection from '../CommentSection';
+import LinkifyText from '@/app/components/LinkifyText';
 
 type Props = { params: { id: string } };
 
@@ -66,7 +67,7 @@ export default async function ReviewDetail({ params }: Props) {
           </h1>
 
           <div className="text-gray-700 leading-8 min-h-[150px] whitespace-pre-wrap">
-            {review.content}
+            <LinkifyText text={review.content ?? ''} />
           </div>
 
           <div className="mt-8 pt-6 border-t border-gray-50 flex justify-between text-sm text-gray-400">

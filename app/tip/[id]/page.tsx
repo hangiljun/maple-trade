@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft, Calendar, User } from 'lucide-react';
 import type { Metadata } from 'next';
 import ImageViewer from '../ImageViewer';
+import LinkifyText from '@/app/components/LinkifyText';
 
 type Props = { params: { id: string } };
 
@@ -64,7 +65,7 @@ export default async function TipDetail({ params }: Props) {
               )}
             </div>
           )}
-          {post.content}
+          <LinkifyText text={post.content ?? ''} />
         </div>
       </article>
     </div>
