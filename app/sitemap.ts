@@ -4,7 +4,7 @@ import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 
 const BASE_URL = 'https://www.메이플급처.com';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
@@ -43,21 +43,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     const newsRoutes: MetadataRoute.Sitemap = newsSnap.docs.map((doc) => ({
       url: `${BASE_URL}/news/${doc.id}`,
-      lastModified: new Date(),
+      lastModified: doc.data().createdAt?.seconds
+        ? new Date(doc.data().createdAt.seconds * 1000)
+        : new Date(),
       changeFrequency: 'monthly',
       priority: 0.7,
     }));
 
     const tipRoutes: MetadataRoute.Sitemap = tipsSnap.docs.map((doc) => ({
       url: `${BASE_URL}/tip/${doc.id}`,
-      lastModified: new Date(),
+      lastModified: doc.data().createdAt?.seconds
+        ? new Date(doc.data().createdAt.seconds * 1000)
+        : new Date(),
       changeFrequency: 'monthly',
       priority: 0.6,
     }));
 
     const reviewRoutes: MetadataRoute.Sitemap = reviewsSnap.docs.map((doc) => ({
       url: `${BASE_URL}/reviews/${doc.id}`,
-      lastModified: new Date(),
+      lastModified: doc.data().createdAt?.seconds
+        ? new Date(doc.data().createdAt.seconds * 1000)
+        : new Date(),
       changeFrequency: 'monthly',
       priority: 0.6,
     }));
