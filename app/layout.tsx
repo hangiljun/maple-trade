@@ -180,16 +180,21 @@ export default function RootLayout({
         </footer>
 
         {/* 우측 하단 둥둥 떠다니는 카톡 버튼 */}
-        <a 
-          href={KAKAO_LINK}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="fixed bottom-6 right-6 bg-[#FEE500] hover:bg-yellow-400 text-[#3A1D1D] font-bold py-3 px-5 rounded-full shadow-2xl flex items-center gap-2 transition transform hover:scale-105 z-50 animate-bounce-slow border-2 border-yellow-200"
-          style={{ boxShadow: "0 4px 14px rgba(0,0,0,0.25)" }}
-        >
-          <MessageCircle size={24} fill="#3A1D1D" />
-          <span className="text-lg">거래 문의</span>
-        </a>
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
+          <a
+            href={KAKAO_LINK}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-[#FEE500] hover:bg-yellow-400 text-[#3A1D1D] font-bold py-3 px-5 rounded-full shadow-2xl flex items-center gap-2 transition transform hover:scale-105 animate-bounce-slow border-2 border-yellow-200"
+            style={{ boxShadow: "0 4px 14px rgba(0,0,0,0.25)" }}
+          >
+            <MessageCircle size={24} fill="#3A1D1D" />
+            <span className="text-lg">거래 문의</span>
+          </a>
+          <p className="text-xs text-gray-500 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-full px-3 py-1 shadow-sm">
+            카카오톡 ID: <span className="font-bold text-gray-800">han8246</span>
+          </p>
+        </div>
 
       </body>
     </html>
