@@ -133,6 +133,15 @@ export default async function Home() {
              </a>
           </div>
 
+          {/* 카카오톡 ID */}
+          <p className="text-sm text-blue-100 mb-6">
+            카카오톡 ID 검색:{" "}
+            <span className="font-bold text-white bg-white/15 border border-white/20 px-2.5 py-1 rounded-lg">
+              han8246
+            </span>
+            으로도 문의하실 수 있습니다
+          </p>
+
           {/* 신뢰 배지 */}
           <div className="flex flex-wrap justify-center gap-3">
             {[
