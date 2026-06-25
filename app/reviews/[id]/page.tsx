@@ -17,9 +17,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${data.title} - 메이플급처 이용후기`,
     description: `${data.author}님의 메이플급처 거래 후기. ${data.content?.slice(0, 100)}`,
+    keywords: ["메이플급처 후기", "메이플 거래 후기", "메이플 안전거래", data.server, data.title],
     openGraph: {
       title: `${data.title} - 메이플급처 이용후기`,
       description: `${data.author}님의 메이플급처 거래 후기. ${data.content?.slice(0, 100)}`,
+      url: `https://www.메이플급처.com/reviews/${params.id}`,
+      type: 'article',
+    },
+    alternates: {
+      canonical: `https://www.메이플급처.com/reviews/${params.id}`,
     },
   };
 }
@@ -32,8 +38,39 @@ export default async function ReviewDetail({ params }: Props) {
   const review = { id: docSnap.id, ...docSnap.data() } as any;
   const comments = review.comments || [];
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Review",
+    "itemReviewed": {
+      "@type": "Service",
+      "name": "메이플급처 - 메이플스토리 아이템 거래"
+    },
+    "author": {
+      "@type": "Person",
+      "name": review.author
+    },
+    "reviewRating": {
+      "@type": "Rating",
+      "ratingValue": "5",
+      "bestRating": "5"
+    },
+    "datePublished": review.createdAt?.seconds
+      ? new Date(review.createdAt.seconds * 1000).toISOString()
+      : new Date().toISOString(),
+    "reviewBody": review.content,
+    "publisher": {
+      "@type": "Organization",
+      "name": "메이플급처"
+    }
+  };
+
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <div className="max-w-3xl mx-auto px-4 py-12">
       <Link href="/reviews" className="inline-flex items-center text-gray-500 hover:text-blue-600 mb-6 transition">
         <ArrowLeft size={18} className="mr-1" /> 전체 후기 보기
       </Link>
@@ -83,6 +120,7 @@ export default async function ReviewDetail({ params }: Props) {
 
       {/* 댓글 + 조회수 카운터 (클라이언트) */}
       <CommentSection reviewId={review.id} initialComments={comments} />
-    </div>
+      </div>
+    </>
   );
 }

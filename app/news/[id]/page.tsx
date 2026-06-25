@@ -15,14 +15,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!docSnap.exists()) return { title: "게시글을 찾을 수 없습니다" };
   const data = docSnap.data();
   return {
-    title: data.title,
-    description: data.content?.slice(0, 150),
+    title: `${data.title} - 메이플급처 이슈`,
+    description: data.content?.slice(0, 150) || "메이플스토리 최신 이슈와 공지사항을 확인하세요.",
+    keywords: ["메이플 이슈", "메이플스토리 공지", "메이플 업데이트", data.title],
     openGraph: {
-      title: data.title,
+      title: `${data.title} - 메이플급처`,
       description: data.content?.slice(0, 150),
+      url: `https://www.메이플급처.com/news/${params.id}`,
+      type: 'article',
       ...(data.thumbnail && data.fileType !== "video"
         ? { images: [{ url: data.thumbnail, width: 1200, height: 630, alt: data.title }] }
         : {}),
+    },
+    alternates: {
+      canonical: `https://www.메이플급처.com/news/${params.id}`,
     },
   };
 }
@@ -34,8 +40,41 @@ export default async function NewsDetailPage({ params }: Props) {
 
   const news = docSnap.data()!;
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": news.title,
+    "description": news.content?.slice(0, 200),
+    "datePublished": news.createdAt?.seconds
+      ? new Date(news.createdAt.seconds * 1000).toISOString()
+      : new Date().toISOString(),
+    "dateModified": news.createdAt?.seconds
+      ? new Date(news.createdAt.seconds * 1000).toISOString()
+      : new Date().toISOString(),
+    "author": {
+      "@type": "Organization",
+      "name": "메이플급처"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "메이플급처",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.메이플급처.com/og-image.png"
+      }
+    },
+    ...(news.thumbnail && news.fileType !== "video" && {
+      "image": news.thumbnail
+    })
+  };
+
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12 min-h-screen">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <div className="max-w-3xl mx-auto px-4 py-12 min-h-screen">
       <Link href="/news" className="inline-flex items-center text-gray-500 hover:text-blue-600 mb-6 font-medium transition">
         <ArrowLeft size={20} className="mr-1" /> 목록으로
       </Link>
@@ -66,6 +105,7 @@ export default async function NewsDetailPage({ params }: Props) {
           </div>
         </div>
       </article>
-    </div>
+      </div>
+    </>
   );
 }

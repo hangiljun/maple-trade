@@ -23,7 +23,9 @@ export const metadata: Metadata = {
     "메이플스토리 급처템", "메이플 아이템 급처",
     "메이플스토리", "메이플 아이템", "메이플 안전거래", "아이템 매입",
     "스카니아 급처", "루나 급처", "엘리시움 급처", "크로아 급처",
-    "베라 급처", "오로라 급처", "에오스 급처",
+    "베라 급처", "오로라 급처", "레드 급처", "유니온 급처",
+    "제니스 급처", "아케인 급처", "노바 급처", "챌린저스 급처",
+    "에오스 급처", "헬리오스 급처",
   ],
   
   openGraph: {
@@ -54,6 +56,12 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.ico",
   },
+
+  alternates: {
+    types: {
+      'application/rss+xml': 'https://www.메이플급처.com/feed.xml',
+    },
+  },
 };
 
 const jsonLd = {
@@ -61,7 +69,7 @@ const jsonLd = {
   "@type": "LocalBusiness",
   "name": "메이플급처",
   "alternateName": ["메이플급처템", "메이플 급처", "메이플스토리 급처"],
-  "description": "메이플스토리 아이템 및 메소 최고가 구입, 최저가 판매. 스카니아, 루나, 엘리시움 등 전 서버 24시간 안전거래.",
+  "description": "메이플스토리 아이템 및 메소 최고가 구입, 최저가 판매. 스카니아, 루나, 엘리시움, 크로아, 베라, 오로라, 레드, 유니온, 제니스, 아케인, 노바, 챌린저스, 에오스, 헬리오스 전 서버 24시간 안전거래.",
   "url": "https://www.메이플급처.com",
   "openingHours": "Mo-Su 00:00-24:00",
   "contactPoint": {

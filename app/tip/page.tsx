@@ -4,8 +4,23 @@ import { ArrowRight, ShieldCheck, MessageCircle, CreditCard, Gift, FileText } fr
 import { db } from '../../firebase';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import ImageViewer from "./ImageViewer";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "이용안내 - 메이플급처 거래 방법 및 안전거래 가이드",
+  description: "메이플급처 이용방법, 거래 절차, 안전거래 팁을 확인하세요. 메이플 급처템, 아이템, 메소 거래 전 필독!",
+  keywords: ["메이플급처 이용안내", "메이플 거래 방법", "메이플 안전거래", "메이플 아이템 거래 팁", "메이플 급처 가이드"],
+  openGraph: {
+    title: "이용안내 - 메이플급처",
+    description: "안전하고 빠른 메이플 거래 가이드",
+    url: "https://www.메이플급처.com/tip",
+  },
+  alternates: {
+    canonical: "https://www.메이플급처.com/tip",
+  },
+};
 
 export default async function TipPage() {
   let tipsList: any[] = [];

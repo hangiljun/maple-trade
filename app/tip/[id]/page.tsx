@@ -21,9 +21,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${data.title} - 메이플급처 이용안내`,
       description: `메이플급처 안전거래 가이드. ${data.content?.slice(0, 120)}`,
+      url: `https://www.메이플급처.com/tip/${params.id}`,
+      type: 'article',
       ...(data.thumbnail && data.fileType !== "video"
         ? { images: [{ url: data.thumbnail, width: 1200, height: 630, alt: data.title }] }
         : {}),
+    },
+    alternates: {
+      canonical: `https://www.메이플급처.com/tip/${params.id}`,
     },
   };
 }
@@ -35,8 +40,38 @@ export default async function TipDetail({ params }: Props) {
 
   const post = { id: docSnap.id, ...docSnap.data() } as any;
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": post.title,
+    "description": post.content?.slice(0, 200),
+    "datePublished": post.createdAt?.seconds
+      ? new Date(post.createdAt.seconds * 1000).toISOString()
+      : new Date().toISOString(),
+    "author": {
+      "@type": "Organization",
+      "name": "메이플급처"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "메이플급처",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.메이플급처.com/og-image.png"
+      }
+    },
+    ...(post.thumbnail && post.fileType !== "video" && {
+      "image": post.thumbnail
+    })
+  };
+
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <div className="max-w-4xl mx-auto px-4 py-12">
       <Link href="/tip" className="inline-flex items-center text-gray-500 hover:text-blue-600 mb-6 transition">
         <ArrowLeft size={18} className="mr-1" /> 목록으로 돌아가기
       </Link>
@@ -68,6 +103,7 @@ export default async function TipDetail({ params }: Props) {
           <LinkifyText text={post.content ?? ''} />
         </div>
       </article>
-    </div>
+      </div>
+    </>
   );
 }

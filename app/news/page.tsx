@@ -7,8 +7,17 @@ import type { Metadata } from "next";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "메이플 이슈 & 뉴스 - 업데이트 및 공지사항",
-  description: "메이플스토리 최신 업데이트, 이벤트 소식, 패치 노트 및 점검 정보를 가장 빠르게 확인하세요.",
+  title: "메이플 이슈 & 뉴스 - 메이플스토리 업데이트·공지사항 | 메이플급처",
+  description: "메이플스토리 최신 업데이트, 이벤트 소식, 패치 노트 및 점검 정보를 가장 빠르게 확인하세요. 메이플급처에서 제공하는 실시간 메이플 이슈.",
+  keywords: ["메이플 이슈", "메이플스토리 업데이트", "메이플 공지", "메이플 패치", "메이플 이벤트"],
+  openGraph: {
+    title: "메이플 이슈 & 뉴스 - 메이플급처",
+    description: "메이플스토리 최신 업데이트, 이벤트, 패치 노트",
+    url: "https://www.메이플급처.com/news",
+  },
+  alternates: {
+    canonical: "https://www.메이플급처.com/news",
+  },
 };
 
 interface NewsItem {

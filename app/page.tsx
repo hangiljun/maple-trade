@@ -48,8 +48,13 @@ export const metadata: Metadata = {
     "메이플스토리 급처템", "메이플 아이템 급처",
     "메이플 아이템 판매", "메이플 안전거래", "메이플 아이템 매입",
     "스카니아 급처", "루나 급처", "엘리시움 급처", "크로아 급처",
-    "베라 급처", "오로라 급처", "에오스 급처",
+    "베라 급처", "오로라 급처", "레드 급처", "유니온 급처",
+    "제니스 급처", "아케인 급처", "노바 급처", "챌린저스 급처",
+    "에오스 급처", "헬리오스 급처",
   ],
+  alternates: {
+    canonical: "https://www.메이플급처.com",
+  },
 };
 
 export default async function Home() {
@@ -86,9 +91,9 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col gap-12 pb-20">
-        
+
       {/* 1. 홍보 배너 구역 */}
-      <section className="bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 py-20 text-center text-white relative overflow-hidden">
+      <section className="bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 py-20 text-center text-white relative overflow-hidden" aria-label="메인 홍보 섹션">
         {/* 배경 블러 원 */}
         <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-400/10 rounded-full translate-x-1/3 translate-y-1/3 blur-3xl"></div>
@@ -160,9 +165,9 @@ export default async function Home() {
       </section>
 
       {/* 2. 사이트 신념 */}
-      <section className="max-w-7xl mx-auto px-4 w-full">
+      <section className="max-w-7xl mx-auto px-4 w-full" aria-labelledby="promise-heading">
         <div className="text-center mb-10">
-          <h2 className="text-2xl font-bold text-gray-800">우리의 약속</h2>
+          <h2 id="promise-heading" className="text-2xl font-bold text-gray-800">우리의 약속</h2>
           <div className="w-10 h-1 bg-blue-500 mx-auto mt-2"></div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -185,26 +190,26 @@ export default async function Home() {
       </section>
 
       {/* 3. 사업자 등록증 */}
-      <section className="max-w-7xl mx-auto px-4 w-full">
+      <section className="max-w-7xl mx-auto px-4 w-full" aria-labelledby="business-heading">
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-800">공식 등록 사업자</h2>
+          <h2 id="business-heading" className="text-2xl font-bold text-gray-800">공식 등록 사업자</h2>
           <div className="w-10 h-1 bg-blue-500 mx-auto mt-2 mb-3"></div>
           <p className="text-gray-500 text-sm">메이플급처는 정식 사업자 등록된 업체입니다.</p>
         </div>
         <div className="flex justify-center">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden max-w-sm w-full">
+          <figure className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden max-w-sm w-full">
             <Image
               src="/business-license.jpg"
-              alt="사업자 등록증"
+              alt="메이플급처 사업자 등록증 - 정식 등록 사업자 인증"
               width={400}
               height={566}
               className="w-full h-auto object-contain"
             />
-            <div className="px-5 py-4 border-t border-gray-100 flex items-center gap-2">
-              <ShieldCheck size={18} className="text-blue-600 flex-shrink-0" />
+            <figcaption className="px-5 py-4 border-t border-gray-100 flex items-center gap-2">
+              <ShieldCheck size={18} className="text-blue-600 flex-shrink-0" aria-hidden="true" />
               <p className="text-sm text-gray-600 font-medium">정식 사업자 등록 완료 — 개인정보 보호를 위해 일부 정보를 가렸습니다.</p>
-            </div>
-          </div>
+            </figcaption>
+          </figure>
         </div>
       </section>
 

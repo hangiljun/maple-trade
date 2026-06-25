@@ -8,9 +8,17 @@ import ReviewWriteSection from "./ReviewWriteSection";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "이용후기 - 메이플급처 실거래 후기",
-  description: "메이플급처에서 실제 거래하신 고객님들의 100% 리얼 후기를 확인하세요. 스카니아, 루나, 엘리시움 등 전 서버 후기 모음.",
-  keywords: ["메이플급처 후기", "메이플 아이템 거래 후기", "메소 거래 후기", "메이플급처 리뷰"],
+  title: "이용후기 - 메이플급처 실거래 고객 후기 | 메이플 급처템 안전거래",
+  description: "메이플급처에서 실제 거래하신 고객님들의 100% 리얼 후기를 확인하세요. 스카니아, 루나, 엘리시움 등 전 서버 후기 모음. 평균 5분 이내 거래 완료.",
+  keywords: ["메이플급처 후기", "메이플 아이템 거래 후기", "메소 거래 후기", "메이플급처 리뷰", "메이플 안전거래 후기"],
+  openGraph: {
+    title: "이용후기 - 메이플급처",
+    description: "실제 고객님들의 100% 리얼 거래 후기",
+    url: "https://www.메이플급처.com/reviews",
+  },
+  alternates: {
+    canonical: "https://www.메이플급처.com/reviews",
+  },
 };
 
 interface Review {
