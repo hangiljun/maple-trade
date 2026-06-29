@@ -150,10 +150,10 @@ export default async function Home() {
           {/* 신뢰 배지 */}
           <div className="flex flex-wrap justify-center gap-3">
             {[
-              { icon: "✅", text: "사업자 등록 완료" },
               { icon: "🔍", text: "더치트 사기 이력 조회" },
               { icon: "⚡", text: "평균 5분 거래" },
               { icon: "💰", text: "수수료 0%" },
+              { icon: "✅", text: "안전한 거래 보장" },
             ].map((badge) => (
               <div key={badge.text} className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 text-sm font-semibold">
                 <span>{badge.icon}</span>
@@ -189,31 +189,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 3. 사업자 등록증 */}
-      <section className="max-w-7xl mx-auto px-4 w-full" aria-labelledby="business-heading">
-        <div className="text-center mb-8">
-          <h2 id="business-heading" className="text-2xl font-bold text-gray-800">공식 등록 사업자</h2>
-          <div className="w-10 h-1 bg-blue-500 mx-auto mt-2 mb-3"></div>
-          <p className="text-gray-500 text-sm">메이플급처는 정식 사업자 등록된 업체입니다.</p>
-        </div>
-        <div className="flex justify-center">
-          <figure className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden max-w-sm w-full">
-            <Image
-              src="/business-license.jpg"
-              alt="메이플급처 사업자 등록증 - 정식 등록 사업자 인증"
-              width={400}
-              height={566}
-              className="w-full h-auto object-contain"
-            />
-            <figcaption className="px-5 py-4 border-t border-gray-100 flex items-center gap-2">
-              <ShieldCheck size={18} className="text-blue-600 flex-shrink-0" aria-hidden="true" />
-              <p className="text-sm text-gray-600 font-medium">정식 사업자 등록 완료 — 개인정보 보호를 위해 일부 정보를 가렸습니다.</p>
-            </figcaption>
-          </figure>
-        </div>
-      </section>
-
-      {/* 4. 특징 및 타 사이트 비교 */}
+      {/* 3. 특징 및 타 사이트 비교 */}
       <section className="bg-white py-16 w-full border-y border-gray-100">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col lg:flex-row gap-12 items-center">

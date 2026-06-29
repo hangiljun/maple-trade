@@ -29,8 +29,8 @@ export const metadata: Metadata = {
   ],
   
   openGraph: {
-    title: "메이플급처 - 실시간 아이템/메소 거래소",
-    description: "메이플 급처, 메소 거래는 여기서! 24시간 안전하게 상담 가능합니다.",
+    title: "메이플급처 - 메이플스토리 급처템 전문 거래소",
+    description: "메이플급처.com - 메이플 급처템, 메소 안전거래 전문. 전 서버 24시간 카카오톡 상담.",
     url: "https://www.메이플급처.com", 
     siteName: "메이플급처",
     locale: "ko_KR",
