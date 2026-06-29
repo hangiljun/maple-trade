@@ -1,54 +1,67 @@
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "이용약관 - 메이플급처",
-  description: "메이플급처 서비스 이용약관입니다.",
-};
+'use client';
 
 export default function TermsPage() {
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12 min-h-screen">
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">이용약관</h1>
-      <p className="text-sm text-gray-400 mb-8">최종 수정일: 2025년 1월 1일</p>
+    <div style={{ minHeight: '100vh', background: '#F8FAFC', padding: '60px 20px' }}>
+      <main style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '40px', textAlign: 'center' }}>
+          이용약관
+        </h1>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 space-y-8 text-gray-700 leading-relaxed">
+        <div style={{ background: '#FFFFFF', padding: '32px', borderRadius: '12px', lineHeight: '1.8', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+          <section style={{ marginBottom: '32px' }}>
+            <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>제1조 (목적)</h2>
+            <p style={{ color: '#4B5563' }}>
+              본 약관은 본 사이트의 이용과 관련하여 운영자와 이용자 간의 권리 및 의무를 규정합니다.
+            </p>
+          </section>
 
-        <section>
-          <h2 className="text-lg font-bold text-gray-900 mb-3">제1조 (목적)</h2>
-          <p>본 약관은 메이플급처(이하 "서비스")가 제공하는 메이플스토리 아이템·메소 거래 중개 서비스의 이용 조건 및 절차, 서비스 이용자와 서비스 제공자의 권리·의무 및 책임사항을 규정함을 목적으로 합니다.</p>
-        </section>
+          <section style={{ marginBottom: '32px' }}>
+            <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>제2조 (서비스 내용)</h2>
+            <p style={{ color: '#4B5563' }}>
+              본 사이트는 거래 중개 플랫폼이며, 실제 거래는 판매자와 구매자 간 직접 진행됩니다.
+            </p>
+          </section>
 
-        <section>
-          <h2 className="text-lg font-bold text-gray-900 mb-3">제2조 (서비스 내용)</h2>
-          <ul className="list-disc list-inside space-y-1 text-gray-600">
-            <li>메이플스토리 아이템 및 메소 매입·판매 중개</li>
-            <li>거래 관련 정보 및 시세 안내</li>
-            <li>이용자 간 후기 공유 커뮤니티</li>
-            <li>거래 관련 공지 및 이슈 안내</li>
-          </ul>
-        </section>
+          <section style={{ marginBottom: '32px' }}>
+            <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>제3조 (이용자 의무)</h2>
+            <p style={{ color: '#4B5563' }}>
+              이용자는 허위 정보 제공, 사이트 운영 방해, 법령 위반 행위를 하여서는 안 됩니다.
+            </p>
+          </section>
 
-        <section>
-          <h2 className="text-lg font-bold text-gray-900 mb-3">제3조 (이용자 의무)</h2>
-          <ul className="list-disc list-inside space-y-1 text-gray-600">
-            <li>타인을 사칭하거나 허위 정보를 제공하는 행위 금지</li>
-            <li>서비스를 이용한 사기, 불법 환전, 현금화 등 불법 행위 금지</li>
-            <li>타인의 명예를 훼손하거나 업무를 방해하는 행위 금지</li>
-            <li>서비스의 정상적인 운영을 방해하는 행위 금지</li>
-          </ul>
-        </section>
+          <section style={{ marginBottom: '32px' }}>
+            <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>제4조 (면책)</h2>
+            <p style={{ color: '#4B5563', marginBottom: '12px' }}>
+              운영자는 다음의 경우 책임을 지지 않습니다:
+            </p>
+            <ul style={{ color: '#4B5563', paddingLeft: '24px' }}>
+              <li>게임 운영사의 정책에 따른 제재</li>
+              <li>천재지변, 시스템 장애 등 불가항력적 사유</li>
+              <li>거래 당사자 간 분쟁</li>
+            </ul>
+          </section>
 
-        <section>
-          <h2 className="text-lg font-bold text-gray-900 mb-3">제4조 (면책조항)</h2>
-          <p className="text-gray-600">서비스는 이용자가 게재한 후기·댓글의 내용에 대해 책임을 지지 않습니다. 또한 천재지변, 시스템 장애, 게임사 정책 변경 등 불가항력으로 인한 서비스 중단에 대해 책임을 지지 않습니다.</p>
-        </section>
+          <section>
+            <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>제5조 (중요 고지)</h2>
+            <div style={{ background: '#FEF2F2', padding: '16px', borderRadius: '8px', border: '1px solid #FCA5A5' }}>
+              <p style={{ color: '#991B1B', fontSize: '14px', margin: 0 }}>
+                ※ 본 서비스는 게임 운영사와 무관한 개인 서비스입니다.<br/>
+                ※ 게임 내 거래는 게임 정책에 따를 수 있으니 신중하게 이용하세요.<br/>
+                ※ 거래 시 발생하는 모든 책임은 이용자에게 있습니다.
+              </p>
+            </div>
+          </section>
 
-        <section>
-          <h2 className="text-lg font-bold text-gray-900 mb-3">제5조 (문의)</h2>
-          <p className="text-gray-600">서비스 이용 중 문의 사항은 카카오톡 오픈채팅을 통해 접수하실 수 있습니다.</p>
-        </section>
+          <p style={{ marginTop: '32px', color: '#9CA3AF', fontSize: '14px', textAlign: 'center' }}>
+            시행일: 2026년 6월 24일
+          </p>
+        </div>
 
-      </div>
+        <div style={{ textAlign: 'center', marginTop: '32px' }}>
+          <a href="/" style={{ color: '#667eea', textDecoration: 'none', fontWeight: '600' }}>← 홈으로 돌아가기</a>
+        </div>
+      </main>
     </div>
   );
 }
