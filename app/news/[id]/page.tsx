@@ -91,7 +91,7 @@ export default async function NewsDetailPage({ params }: Props) {
 
         <div className="p-8">
           {/* 블록 기반 렌더링 */}
-          {news.blocks && Array.isArray(news.blocks) ? (
+          {news.blocks && Array.isArray(news.blocks) && news.blocks.length > 0 ? (
             <div className="space-y-6">
               {news.blocks.map((block: any, index: number) => (
                 <div key={index}>

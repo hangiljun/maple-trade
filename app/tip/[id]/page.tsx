@@ -93,7 +93,7 @@ export default async function TipDetail({ params }: Props) {
 
         <div className="p-8 min-h-[300px] text-gray-800 leading-relaxed">
           {/* 블록 기반 렌더링 */}
-          {post.blocks && Array.isArray(post.blocks) ? (
+          {post.blocks && Array.isArray(post.blocks) && post.blocks.length > 0 ? (
             <div className="space-y-6">
               {post.blocks.map((block: any, index: number) => (
                 <div key={index}>
