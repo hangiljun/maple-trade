@@ -7,6 +7,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import ImageViewer from "../../tip/ImageViewer";
 import LinkifyText from '@/app/components/LinkifyText';
+import 'react-quill/dist/quill.snow.css';
 
 type Props = { params: { id: string } };
 
@@ -96,16 +97,9 @@ export default async function NewsDetailPage({ params }: Props) {
                 <div key={index}>
                   {block.type === 'text' ? (
                     <div
-                      className="leading-relaxed whitespace-pre-line"
-                      style={{
-                        fontSize: block.fontSize || '18px',
-                        color: block.color || '#1F2937',
-                        fontWeight: block.fontWeight || 'normal',
-                        textAlign: block.textAlign || 'left'
-                      }}
-                    >
-                      <LinkifyText text={block.content || ''} />
-                    </div>
+                      className="text-gray-800 leading-relaxed ql-editor"
+                      dangerouslySetInnerHTML={{ __html: block.content || '' }}
+                    />
                   ) : block.type === 'image' && block.url ? (
                     <div className="my-6">
                       <ImageViewer src={block.url} alt={`이미지 ${index + 1}`} />
