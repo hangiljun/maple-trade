@@ -90,17 +90,41 @@ export default async function TipDetail({ params }: Props) {
           </div>
         </div>
 
-        <div className="p-8 min-h-[300px] text-gray-800 leading-relaxed whitespace-pre-wrap">
-          {post.thumbnail && (
-            <div className="mb-6 text-center">
-              {post.fileType === 'video' ? (
-                <video src={post.thumbnail} controls className="max-w-full max-h-[70vh] mx-auto rounded-xl border border-gray-100" />
-              ) : (
-                <ImageViewer src={post.thumbnail} alt={`메이플급처 꿀팁 - ${post.title}`} />
-              )}
+        <div className="p-8 min-h-[300px] text-gray-800 leading-relaxed">
+          {/* 블록 기반 렌더링 */}
+          {post.blocks && Array.isArray(post.blocks) ? (
+            <div className="space-y-6">
+              {post.blocks.map((block: any, index: number) => (
+                <div key={index}>
+                  {block.type === 'text' ? (
+                    <div className="whitespace-pre-wrap">
+                      <LinkifyText text={block.content || ''} />
+                    </div>
+                  ) : block.type === 'image' && block.url ? (
+                    <div className="my-6 text-center">
+                      <ImageViewer src={block.url} alt={`이미지 ${index + 1}`} />
+                    </div>
+                  ) : null}
+                </div>
+              ))}
             </div>
+          ) : (
+            /* 하위 호환성: 기존 content 필드가 있는 경우 */
+            <>
+              {post.thumbnail && (
+                <div className="mb-6 text-center">
+                  {post.fileType === 'video' ? (
+                    <video src={post.thumbnail} controls className="max-w-full max-h-[70vh] mx-auto rounded-xl border border-gray-100" />
+                  ) : (
+                    <ImageViewer src={post.thumbnail} alt={`메이플급처 꿀팁 - ${post.title}`} />
+                  )}
+                </div>
+              )}
+              <div className="whitespace-pre-wrap">
+                <LinkifyText text={post.content ?? ''} />
+              </div>
+            </>
           )}
-          <LinkifyText text={post.content ?? ''} />
         </div>
       </article>
       </div>

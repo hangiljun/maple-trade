@@ -89,20 +89,42 @@ export default async function NewsDetailPage({ params }: Props) {
         </div>
 
         <div className="p-8">
-          {news.thumbnail && (
-            <div className="mb-8">
-              {news.fileType === 'video' ? (
-                <div className="rounded-xl overflow-hidden border border-gray-100 shadow-sm">
-                  <video src={news.thumbnail} controls className="w-full max-h-[500px] bg-black" />
+          {/* 블록 기반 렌더링 */}
+          {news.blocks && Array.isArray(news.blocks) ? (
+            <div className="space-y-6">
+              {news.blocks.map((block: any, index: number) => (
+                <div key={index}>
+                  {block.type === 'text' ? (
+                    <div className="text-gray-800 leading-relaxed whitespace-pre-line text-lg">
+                      <LinkifyText text={block.content || ''} />
+                    </div>
+                  ) : block.type === 'image' && block.url ? (
+                    <div className="my-6">
+                      <ImageViewer src={block.url} alt={`이미지 ${index + 1}`} />
+                    </div>
+                  ) : null}
                 </div>
-              ) : (
-                <ImageViewer src={news.thumbnail} alt={news.title || "상세 이미지"} />
-              )}
+              ))}
             </div>
+          ) : (
+            /* 하위 호환성: 기존 content 필드가 있는 경우 */
+            <>
+              {news.thumbnail && (
+                <div className="mb-8">
+                  {news.fileType === 'video' ? (
+                    <div className="rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+                      <video src={news.thumbnail} controls className="w-full max-h-[500px] bg-black" />
+                    </div>
+                  ) : (
+                    <ImageViewer src={news.thumbnail} alt={news.title || "상세 이미지"} />
+                  )}
+                </div>
+              )}
+              <div className="text-gray-800 leading-relaxed whitespace-pre-line text-lg">
+                <LinkifyText text={news.content ?? ''} />
+              </div>
+            </>
           )}
-          <div className="text-gray-800 leading-relaxed whitespace-pre-line text-lg">
-            <LinkifyText text={news.content ?? ''} />
-          </div>
         </div>
       </article>
       </div>

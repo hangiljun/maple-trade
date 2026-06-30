@@ -10,10 +10,19 @@ import {
   signInWithEmailAndPassword, signOut, onAuthStateChanged, User 
 } from "firebase/auth";
 import { db, storage, auth } from '../../firebase'; 
-import { Trash2, Upload, LogOut, Lock, ShieldAlert, Key, User as UserIcon, MessageCircle, Edit2, X } from "lucide-react";
+import { Trash2, Upload, LogOut, Lock, ShieldAlert, Key, User as UserIcon, MessageCircle, Edit2, X, Plus, Image as ImageIcon, Type, MoveUp, MoveDown } from "lucide-react";
 
 // 🔒 [보안] 관리자 이메일 설정
-const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "6332159@gmail.com"; 
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "6332159@gmail.com";
+
+// 블록 타입 정의
+type ContentBlock = {
+  id: string;
+  type: 'text' | 'image';
+  content?: string; // 텍스트 블록의 내용
+  url?: string; // 이미지 블록의 URL
+  file?: File; // 업로드할 파일 (임시)
+}; 
 
 export default function AdminPage() {
   // --- 인증 상태 ---
@@ -31,16 +40,13 @@ export default function AdminPage() {
     
   // 글쓰기 폼 상태
   const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [category, setCategory] = useState("공지"); // ✅ 카테고리 상태 추가
-  const [file, setFile] = useState<File | null>(null);
+  const [blocks, setBlocks] = useState<ContentBlock[]>([]); // 블록 배열
+  const [category, setCategory] = useState("공지");
   const [uploading, setUploading] = useState(false);
 
   // ✅ 수정 모드 상태
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [existingThumbnail, setExistingThumbnail] = useState<string>("");
-  const [existingFileType, setExistingFileType] = useState<string>("");
 
   // ✅ 데이터 가져오기 함수
   const fetchData = useCallback(async (tab: string) => {
@@ -115,40 +121,92 @@ export default function AdminPage() {
     setIsEditMode(false);
     setEditingId(null);
     setTitle("");
-    setContent("");
+    setBlocks([]);
     setCategory("공지");
-    setFile(null);
-    setExistingThumbnail("");
-    setExistingFileType("");
   };
 
-  // --- 글 등록 ---
+  // ✅ 블록 추가 함수
+  const addTextBlock = () => {
+    setBlocks([...blocks, { id: Date.now().toString(), type: 'text', content: '' }]);
+  };
+
+  const addImageBlock = () => {
+    setBlocks([...blocks, { id: Date.now().toString(), type: 'image', url: '' }]);
+  };
+
+  // ✅ 블록 삭제
+  const removeBlock = (id: string) => {
+    setBlocks(blocks.filter(b => b.id !== id));
+  };
+
+  // ✅ 블록 내용 변경
+  const updateBlockContent = (id: string, content: string) => {
+    setBlocks(blocks.map(b => b.id === id ? { ...b, content } : b));
+  };
+
+  // ✅ 블록 이미지 파일 변경
+  const updateBlockFile = (id: string, file: File | null) => {
+    setBlocks(blocks.map(b => b.id === id ? { ...b, file } : b));
+  };
+
+  // ✅ 블록 위로 이동
+  const moveBlockUp = (index: number) => {
+    if (index === 0) return;
+    const newBlocks = [...blocks];
+    [newBlocks[index - 1], newBlocks[index]] = [newBlocks[index], newBlocks[index - 1]];
+    setBlocks(newBlocks);
+  };
+
+  // ✅ 블록 아래로 이동
+  const moveBlockDown = (index: number) => {
+    if (index === blocks.length - 1) return;
+    const newBlocks = [...blocks];
+    [newBlocks[index], newBlocks[index + 1]] = [newBlocks[index + 1], newBlocks[index]];
+    setBlocks(newBlocks);
+  };
+
+  // --- 글 등록 (블록 기반) ---
   const handleUpload = async () => {
-    if (!title || !content) return alert("제목과 내용을 입력해주세요.");
+    if (!title) return alert("제목을 입력해주세요.");
+    if (blocks.length === 0) return alert("최소 1개 이상의 블록을 추가해주세요.");
+
     setUploading(true);
-    let fileUrl = "";
-    let fileType = "image";
 
     try {
-      if (file) {
-        const storageRef = ref(storage, `${activeTab}/${Date.now()}_${file.name}`);
-        await uploadBytes(storageRef, file);
-        fileUrl = await getDownloadURL(storageRef);
-        fileType = file.type.startsWith("video") ? "video" : "image";
-      }
+      // 이미지 블록들의 파일 업로드
+      const uploadedBlocks = await Promise.all(
+        blocks.map(async (block) => {
+          if (block.type === 'image' && block.file) {
+            const storageRef = ref(storage, `${activeTab}/${Date.now()}_${block.file.name}`);
+            await uploadBytes(storageRef, block.file);
+            const url = await getDownloadURL(storageRef);
+            return { type: 'image', url };
+          } else if (block.type === 'text') {
+            return { type: 'text', content: block.content || '' };
+          } else if (block.type === 'image' && block.url) {
+            return { type: 'image', url: block.url };
+          }
+          return block;
+        })
+      );
+
+      // 첫 번째 이미지를 썸네일로 사용
+      const firstImage = uploadedBlocks.find(b => b.type === 'image');
+      const thumbnail = firstImage?.url || '';
 
       await addDoc(collection(db, activeTab), {
         title,
-        content,
-        category: activeTab === 'news' ? category : null, // ✅ 뉴스일 경우 카테고리 저장
-        thumbnail: fileUrl,
-        fileType,
-        date: new Date().toLocaleDateString('ko-KR'), // 날짜 포맷 통일
+        blocks: uploadedBlocks,
+        category: activeTab === 'news' ? category : null,
+        thumbnail,
+        date: new Date().toLocaleDateString('ko-KR'),
         createdAt: new Date()
       });
 
       alert("등록되었습니다!");
-      setTitle(""); setContent(""); setFile(null);
+      setTitle("");
+      setBlocks([]);
+      setCategory("공지");
       // 업로드 후 목록 갱신
       fetchData(activeTab);
     } catch (e) {
@@ -164,38 +222,61 @@ export default function AdminPage() {
     setIsEditMode(true);
     setEditingId(item.id);
     setTitle(item.title || "");
-    setContent(item.content || "");
     setCategory(item.category || "공지");
-    setExistingThumbnail(item.thumbnail || "");
-    setExistingFileType(item.fileType || "");
-    setFile(null); // 새 파일은 비워둠
+
+    // 블록 데이터가 있으면 로드, 없으면 빈 배열
+    if (item.blocks && Array.isArray(item.blocks)) {
+      const loadedBlocks = item.blocks.map((block: any, index: number) => ({
+        id: `${Date.now()}_${index}`,
+        type: block.type,
+        content: block.content || '',
+        url: block.url || ''
+      }));
+      setBlocks(loadedBlocks);
+    } else {
+      setBlocks([]);
+    }
+
     window.scrollTo({ top: 0, behavior: 'smooth' }); // 폼으로 스크롤
   };
 
   // ✅ 수정 완료
   const handleUpdate = async () => {
-    if (!title || !content) return alert("제목과 내용을 입력해주세요.");
+    if (!title) return alert("제목을 입력해주세요.");
+    if (blocks.length === 0) return alert("최소 1개 이상의 블록을 추가해주세요.");
     if (!editingId) return alert("수정할 게시물을 찾을 수 없습니다.");
 
     setUploading(true);
-    let fileUrl = existingThumbnail; // 기본값은 기존 썸네일
-    let fileType = existingFileType;
 
     try {
-      // 새 파일이 업로드된 경우에만 새로 업로드
-      if (file) {
-        const storageRef = ref(storage, `${activeTab}/${Date.now()}_${file.name}`);
-        await uploadBytes(storageRef, file);
-        fileUrl = await getDownloadURL(storageRef);
-        fileType = file.type.startsWith("video") ? "video" : "image";
-      }
+      // 이미지 블록들의 파일 업로드
+      const uploadedBlocks = await Promise.all(
+        blocks.map(async (block) => {
+          if (block.type === 'image' && block.file) {
+            // 새 파일이 있으면 업로드
+            const storageRef = ref(storage, `${activeTab}/${Date.now()}_${block.file.name}`);
+            await uploadBytes(storageRef, block.file);
+            const url = await getDownloadURL(storageRef);
+            return { type: 'image', url };
+          } else if (block.type === 'text') {
+            return { type: 'text', content: block.content || '' };
+          } else if (block.type === 'image' && block.url) {
+            // 기존 이미지 URL 유지
+            return { type: 'image', url: block.url };
+          }
+          return block;
+        })
+      );
+
+      // 첫 번째 이미지를 썸네일로 사용
+      const firstImage = uploadedBlocks.find(b => b.type === 'image');
+      const thumbnail = firstImage?.url || '';
 
       await updateDoc(doc(db, activeTab, editingId), {
         title,
-        content,
+        blocks: uploadedBlocks,
         category: activeTab === 'news' ? category : null,
-        thumbnail: fileUrl,
-        fileType,
+        thumbnail,
         // 수정일은 업데이트하지 않고 원본 유지
       });
 
@@ -364,25 +445,100 @@ export default function AdminPage() {
                   )}
 
                   <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="제목을 입력하세요" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"/>
-                  <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="내용을 입력하세요" className="w-full p-3 border border-gray-300 rounded-lg h-40 resize-none focus:ring-2 focus:ring-blue-500 outline-none"/>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                    <input type="file" onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)} className="hidden" id="file-upload"/>
-                    <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center gap-2 text-gray-500 hover:text-blue-600">
-                        <Upload size={24}/>
-                        {file ? <span className="text-blue-600 font-bold">{file.name}</span> : "사진/동영상 클릭하여 업로드"}
-                    </label>
+
+                  {/* 블록 추가 버튼 */}
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={addTextBlock}
+                      className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg flex items-center justify-center gap-2 font-medium transition"
+                    >
+                      <Type size={18} /> 텍스트 추가
+                    </button>
+                    <button
+                      type="button"
+                      onClick={addImageBlock}
+                      className="flex-1 bg-blue-100 hover:bg-blue-200 text-blue-700 py-2 px-4 rounded-lg flex items-center justify-center gap-2 font-medium transition"
+                    >
+                      <ImageIcon size={18} /> 이미지 추가
+                    </button>
                   </div>
-                  {existingThumbnail && !file && (
-                    <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
-                      <p className="text-xs text-gray-500 mb-2">기존 파일:</p>
-                      {existingFileType === "video" ? (
-                        <video src={existingThumbnail} className="w-full h-32 object-cover rounded" />
-                      ) : (
-                        <img src={existingThumbnail} alt="기존 썸네일" className="w-full h-32 object-cover rounded" />
-                      )}
-                      <p className="text-xs text-gray-400 mt-2">* 새 파일을 업로드하지 않으면 기존 파일이 유지됩니다</p>
-                    </div>
-                  )}
+
+                  {/* 블록 리스트 */}
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {blocks.map((block, index) => (
+                      <div key={block.id} className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-xs font-bold text-gray-500">
+                            {block.type === 'text' ? '📝 텍스트' : '🖼️ 이미지'}
+                          </span>
+                          <div className="flex gap-1">
+                            {index > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => moveBlockUp(index)}
+                                className="text-gray-400 hover:text-blue-600 p-1"
+                                title="위로"
+                              >
+                                <MoveUp size={16} />
+                              </button>
+                            )}
+                            {index < blocks.length - 1 && (
+                              <button
+                                type="button"
+                                onClick={() => moveBlockDown(index)}
+                                className="text-gray-400 hover:text-blue-600 p-1"
+                                title="아래로"
+                              >
+                                <MoveDown size={16} />
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => removeBlock(block.id)}
+                              className="text-gray-400 hover:text-red-600 p-1"
+                              title="삭제"
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
+                        </div>
+
+                        {block.type === 'text' ? (
+                          <textarea
+                            value={block.content || ''}
+                            onChange={(e) => updateBlockContent(block.id, e.target.value)}
+                            placeholder="내용을 입력하세요"
+                            className="w-full p-2 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 outline-none"
+                            rows={4}
+                          />
+                        ) : (
+                          <div>
+                            {block.url && !block.file ? (
+                              <div className="mb-2">
+                                <img src={block.url} alt="기존 이미지" className="w-full h-32 object-cover rounded border" />
+                                <p className="text-xs text-gray-400 mt-1">기존 이미지 (변경하려면 새 파일 선택)</p>
+                              </div>
+                            ) : null}
+                            <input
+                              type="file"
+                              accept="image/*,video/*"
+                              onChange={(e) => updateBlockFile(block.id, e.target.files?.[0] || null)}
+                              className="text-sm"
+                            />
+                            {block.file && (
+                              <p className="text-xs text-blue-600 mt-1">✓ {block.file.name}</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    {blocks.length === 0 && (
+                      <p className="text-center text-gray-400 text-sm py-4">
+                        "텍스트 추가" 또는 "이미지 추가" 버튼을 눌러 내용을 작성하세요
+                      </p>
+                    )}
+                  </div>
 
                   <button
                     onClick={isEditMode ? handleUpdate : handleUpload}
