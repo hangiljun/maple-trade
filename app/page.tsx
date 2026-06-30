@@ -93,19 +93,18 @@ export default async function Home() {
     <div className="flex flex-col gap-12 pb-20">
 
       {/* 1. 홍보 배너 구역 */}
-      <section className="bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 py-12 text-center text-white relative overflow-hidden" aria-label="메인 홍보 섹션">
-        {/* 배경 블러 원 */}
-        <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-400/10 rounded-full translate-x-1/3 translate-y-1/3 blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/4 w-48 h-48 bg-violet-400/10 rounded-full blur-2xl"></div>
+      <section className="relative py-12 text-center text-white overflow-hidden" aria-label="메인 홍보 섹션">
+        {/* 배경 이미지 */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(/hero-banner.png)',
+            filter: 'brightness(0.7)'
+          }}
+        />
 
-        {/* 떠다니는 단풍잎 장식 */}
-        <span className="absolute top-8 left-[8%] text-3xl opacity-20 animate-bounce" style={{animationDuration:"3s"}}>🍁</span>
-        <span className="absolute top-16 right-[10%] text-2xl opacity-15 animate-bounce" style={{animationDuration:"4s", animationDelay:"0.5s"}}>🍁</span>
-        <span className="absolute bottom-12 left-[15%] text-xl opacity-20 animate-bounce" style={{animationDuration:"3.5s", animationDelay:"1s"}}>🍁</span>
-        <span className="absolute bottom-8 right-[18%] text-3xl opacity-15 animate-bounce" style={{animationDuration:"4.5s", animationDelay:"0.3s"}}>🍁</span>
-        <span className="absolute top-1/3 left-[3%] text-lg opacity-10 animate-bounce" style={{animationDuration:"5s", animationDelay:"1.5s"}}>🍁</span>
-        <span className="absolute top-1/4 right-[4%] text-2xl opacity-10 animate-bounce" style={{animationDuration:"3.8s", animationDelay:"0.8s"}}>🍁</span>
+        {/* 어두운 오버레이 (텍스트 가독성) */}
+        <div className="absolute inset-0 bg-black/30" />
 
         <div className="max-w-4xl mx-auto px-4 relative z-10">
           <h1 className="text-3xl md:text-4xl font-extrabold mb-3 leading-tight">
