@@ -93,7 +93,7 @@ export default async function Home() {
     <div className="flex flex-col gap-12 pb-20">
 
       {/* 1. 홍보 배너 구역 */}
-      <section className="bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 py-20 text-center text-white relative overflow-hidden" aria-label="메인 홍보 섹션">
+      <section className="bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 py-12 text-center text-white relative overflow-hidden" aria-label="메인 홍보 섹션">
         {/* 배경 블러 원 */}
         <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-400/10 rounded-full translate-x-1/3 translate-y-1/3 blur-3xl"></div>
@@ -108,20 +108,20 @@ export default async function Home() {
         <span className="absolute top-1/4 right-[4%] text-2xl opacity-10 animate-bounce" style={{animationDuration:"3.8s", animationDelay:"0.8s"}}>🍁</span>
 
         <div className="max-w-4xl mx-auto px-4 relative z-10">
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">
+          <h1 className="text-3xl md:text-4xl font-extrabold mb-3 leading-tight">
             메이플스토리 급처템 <br/> 가장 안전하고 빠르게 정리하세요
           </h1>
-          <p className="text-blue-100 mb-8 text-lg">
+          <p className="text-blue-100 mb-6 text-base">
             실시간 경매장 매물로 시세 측정 합니다.
           </p>
 
-          <div className="inline-block border-4 border-pink-500 rounded-xl p-4 bg-black/50 backdrop-blur-sm mb-8">
-            <p className="neon-text text-xl md:text-2xl font-mono">
+          <div className="inline-block border-4 border-pink-500 rounded-xl p-3 bg-black/50 backdrop-blur-sm mb-6">
+            <p className="neon-text text-lg md:text-xl font-mono">
               365일 24시간 메이플 거래 대기중
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row justify-center gap-3 w-full max-w-2xl mx-auto px-4 mb-10">
+          <div className="flex flex-col sm:flex-row justify-center gap-3 w-full max-w-2xl mx-auto px-4 mb-6">
              <Link href="/tip" className="flex-1 bg-white text-blue-700 border-2 border-white px-4 py-3.5 rounded-full font-bold hover:bg-gray-100 transition shadow-lg flex items-center justify-center gap-2 text-sm md:text-base">
                <FileText size={18} /> 거래 방법
              </Link>
@@ -139,28 +139,13 @@ export default async function Home() {
           </div>
 
           {/* 카카오톡 ID */}
-          <p className="text-sm text-blue-100 mb-6">
+          <p className="text-sm text-blue-100">
             카카오톡 ID 검색:{" "}
             <span className="font-bold text-white bg-white/15 border border-white/20 px-2.5 py-1 rounded-lg">
               han8246
             </span>
             으로도 문의하실 수 있습니다
           </p>
-
-          {/* 신뢰 배지 */}
-          <div className="flex flex-wrap justify-center gap-3">
-            {[
-              { icon: "🔍", text: "더치트 사기 이력 조회" },
-              { icon: "⚡", text: "평균 5분 거래" },
-              { icon: "💰", text: "수수료 0%" },
-              { icon: "✅", text: "안전한 거래 보장" },
-            ].map((badge) => (
-              <div key={badge.text} className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 text-sm font-semibold">
-                <span>{badge.icon}</span>
-                <span>{badge.text}</span>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
