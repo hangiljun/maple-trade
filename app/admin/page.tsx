@@ -21,7 +21,7 @@ type ContentBlock = {
   type: 'text' | 'image';
   content?: string; // 텍스트 블록의 내용
   url?: string; // 이미지 블록의 URL
-  file?: File; // 업로드할 파일 (임시)
+  file?: File | null; // 업로드할 파일 (임시)
   // 텍스트 스타일
   fontSize?: string; // 글씨 크기
   color?: string; // 글씨 색상
