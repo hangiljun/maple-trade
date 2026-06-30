@@ -95,7 +95,15 @@ export default async function NewsDetailPage({ params }: Props) {
               {news.blocks.map((block: any, index: number) => (
                 <div key={index}>
                   {block.type === 'text' ? (
-                    <div className="text-gray-800 leading-relaxed whitespace-pre-line text-lg">
+                    <div
+                      className="leading-relaxed whitespace-pre-line"
+                      style={{
+                        fontSize: block.fontSize || '18px',
+                        color: block.color || '#1F2937',
+                        fontWeight: block.fontWeight || 'normal',
+                        textAlign: block.textAlign || 'left'
+                      }}
+                    >
                       <LinkifyText text={block.content || ''} />
                     </div>
                   ) : block.type === 'image' && block.url ? (

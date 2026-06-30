@@ -22,6 +22,11 @@ type ContentBlock = {
   content?: string; // 텍스트 블록의 내용
   url?: string; // 이미지 블록의 URL
   file?: File; // 업로드할 파일 (임시)
+  // 텍스트 스타일
+  fontSize?: string; // 글씨 크기
+  color?: string; // 글씨 색상
+  fontWeight?: string; // 굵기
+  textAlign?: string; // 정렬
 }; 
 
 export default function AdminPage() {
@@ -131,7 +136,15 @@ export default function AdminPage() {
 
   // ✅ 블록 추가 함수
   const addTextBlock = () => {
-    setBlocks([...blocks, { id: Date.now().toString(), type: 'text', content: '' }]);
+    setBlocks([...blocks, {
+      id: Date.now().toString(),
+      type: 'text',
+      content: '',
+      fontSize: '16px',
+      color: '#000000',
+      fontWeight: 'normal',
+      textAlign: 'left'
+    }]);
   };
 
   const addImageBlock = () => {
@@ -146,6 +159,11 @@ export default function AdminPage() {
   // ✅ 블록 내용 변경
   const updateBlockContent = (id: string, content: string) => {
     setBlocks(blocks.map(b => b.id === id ? { ...b, content } : b));
+  };
+
+  // ✅ 블록 스타일 변경
+  const updateBlockStyle = (id: string, style: Partial<ContentBlock>) => {
+    setBlocks(blocks.map(b => b.id === id ? { ...b, ...style } : b));
   };
 
   // ✅ 블록 이미지 파일 변경
@@ -194,7 +212,14 @@ export default function AdminPage() {
             const url = await getDownloadURL(storageRef);
             return { type: 'image', url };
           } else if (block.type === 'text') {
-            return { type: 'text', content: block.content || '' };
+            return {
+              type: 'text',
+              content: block.content || '',
+              fontSize: block.fontSize,
+              color: block.color,
+              fontWeight: block.fontWeight,
+              textAlign: block.textAlign
+            };
           } else if (block.type === 'image' && block.url) {
             return { type: 'image', url: block.url };
           }
@@ -240,7 +265,11 @@ export default function AdminPage() {
         id: `${Date.now()}_${index}`,
         type: block.type,
         content: block.content || '',
-        url: block.url || ''
+        url: block.url || '',
+        fontSize: block.fontSize || '16px',
+        color: block.color || '#000000',
+        fontWeight: block.fontWeight || 'normal',
+        textAlign: block.textAlign || 'left'
       }));
       setBlocks(loadedBlocks);
     } else {
@@ -277,7 +306,14 @@ export default function AdminPage() {
             const url = await getDownloadURL(storageRef);
             return { type: 'image', url };
           } else if (block.type === 'text') {
-            return { type: 'text', content: block.content || '' };
+            return {
+              type: 'text',
+              content: block.content || '',
+              fontSize: block.fontSize,
+              color: block.color,
+              fontWeight: block.fontWeight,
+              textAlign: block.textAlign
+            };
           } else if (block.type === 'image' && block.url) {
             // 기존 이미지 URL 유지
             return { type: 'image', url: block.url };
@@ -544,13 +580,98 @@ export default function AdminPage() {
                         </div>
 
                         {block.type === 'text' ? (
-                          <textarea
-                            value={block.content || ''}
-                            onChange={(e) => updateBlockContent(block.id, e.target.value)}
-                            placeholder="내용을 입력하세요"
-                            className="w-full p-2 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 outline-none"
-                            rows={4}
-                          />
+                          <div className="space-y-2">
+                            {/* 스타일 옵션 */}
+                            <div className="grid grid-cols-2 gap-2">
+                              {/* 글씨 크기 */}
+                              <div>
+                                <label className="text-xs text-gray-600 block mb-1">크기</label>
+                                <select
+                                  value={block.fontSize || '16px'}
+                                  onChange={(e) => updateBlockStyle(block.id, { fontSize: e.target.value })}
+                                  className="w-full text-xs p-1.5 border border-gray-300 rounded"
+                                >
+                                  <option value="12px">작게 (12px)</option>
+                                  <option value="14px">조금 작게 (14px)</option>
+                                  <option value="16px">보통 (16px)</option>
+                                  <option value="18px">조금 크게 (18px)</option>
+                                  <option value="20px">크게 (20px)</option>
+                                  <option value="24px">아주 크게 (24px)</option>
+                                  <option value="28px">특대 (28px)</option>
+                                  <option value="32px">초대형 (32px)</option>
+                                </select>
+                              </div>
+
+                              {/* 글씨 색상 */}
+                              <div>
+                                <label className="text-xs text-gray-600 block mb-1">색상</label>
+                                <div className="flex gap-1">
+                                  <input
+                                    type="color"
+                                    value={block.color || '#000000'}
+                                    onChange={(e) => updateBlockStyle(block.id, { color: e.target.value })}
+                                    className="w-10 h-7 border border-gray-300 rounded cursor-pointer"
+                                  />
+                                  <select
+                                    value={block.color || '#000000'}
+                                    onChange={(e) => updateBlockStyle(block.id, { color: e.target.value })}
+                                    className="flex-1 text-xs p-1.5 border border-gray-300 rounded"
+                                  >
+                                    <option value="#000000">검정</option>
+                                    <option value="#FF0000">빨강</option>
+                                    <option value="#0000FF">파랑</option>
+                                    <option value="#00AA00">초록</option>
+                                    <option value="#FF6B00">주황</option>
+                                    <option value="#9900FF">보라</option>
+                                    <option value="#666666">회색</option>
+                                  </select>
+                                </div>
+                              </div>
+
+                              {/* 글씨 굵기 */}
+                              <div>
+                                <label className="text-xs text-gray-600 block mb-1">굵기</label>
+                                <select
+                                  value={block.fontWeight || 'normal'}
+                                  onChange={(e) => updateBlockStyle(block.id, { fontWeight: e.target.value })}
+                                  className="w-full text-xs p-1.5 border border-gray-300 rounded"
+                                >
+                                  <option value="normal">보통</option>
+                                  <option value="bold">굵게</option>
+                                  <option value="900">아주 굵게</option>
+                                </select>
+                              </div>
+
+                              {/* 정렬 */}
+                              <div>
+                                <label className="text-xs text-gray-600 block mb-1">정렬</label>
+                                <select
+                                  value={block.textAlign || 'left'}
+                                  onChange={(e) => updateBlockStyle(block.id, { textAlign: e.target.value })}
+                                  className="w-full text-xs p-1.5 border border-gray-300 rounded"
+                                >
+                                  <option value="left">왼쪽</option>
+                                  <option value="center">가운데</option>
+                                  <option value="right">오른쪽</option>
+                                </select>
+                              </div>
+                            </div>
+
+                            {/* 텍스트 입력 */}
+                            <textarea
+                              value={block.content || ''}
+                              onChange={(e) => updateBlockContent(block.id, e.target.value)}
+                              placeholder="내용을 입력하세요"
+                              className="w-full p-2 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 outline-none"
+                              rows={4}
+                              style={{
+                                fontSize: block.fontSize,
+                                color: block.color,
+                                fontWeight: block.fontWeight,
+                                textAlign: block.textAlign as any
+                              }}
+                            />
+                          </div>
                         ) : (
                           <div>
                             {block.url && !block.file ? (

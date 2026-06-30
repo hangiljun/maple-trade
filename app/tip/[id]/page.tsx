@@ -97,7 +97,15 @@ export default async function TipDetail({ params }: Props) {
               {post.blocks.map((block: any, index: number) => (
                 <div key={index}>
                   {block.type === 'text' ? (
-                    <div className="whitespace-pre-wrap">
+                    <div
+                      className="whitespace-pre-wrap leading-relaxed"
+                      style={{
+                        fontSize: block.fontSize || '16px',
+                        color: block.color || '#1F2937',
+                        fontWeight: block.fontWeight || 'normal',
+                        textAlign: block.textAlign || 'left'
+                      }}
+                    >
                       <LinkifyText text={block.content || ''} />
                     </div>
                   ) : block.type === 'image' && block.url ? (
