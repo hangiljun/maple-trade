@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { 
-  collection, addDoc, deleteDoc, doc, getDocs, query, orderBy 
+import {
+  collection, addDoc, deleteDoc, doc, getDocs, query, orderBy, updateDoc, getDoc
 } from "firebase/firestore";
 import { 
   ref, uploadBytes, getDownloadURL 
@@ -10,7 +10,7 @@ import {
   signInWithEmailAndPassword, signOut, onAuthStateChanged, User 
 } from "firebase/auth";
 import { db, storage, auth } from '../../firebase'; 
-import { Trash2, Upload, LogOut, Lock, ShieldAlert, Key, User as UserIcon, MessageCircle } from "lucide-react";
+import { Trash2, Upload, LogOut, Lock, ShieldAlert, Key, User as UserIcon, MessageCircle, Edit2, X } from "lucide-react";
 
 // 🔒 [보안] 관리자 이메일 설정
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "6332159@gmail.com"; 
@@ -35,6 +35,12 @@ export default function AdminPage() {
   const [category, setCategory] = useState("공지"); // ✅ 카테고리 상태 추가
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+
+  // ✅ 수정 모드 상태
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [existingThumbnail, setExistingThumbnail] = useState<string>("");
+  const [existingFileType, setExistingFileType] = useState<string>("");
 
   // ✅ 데이터 가져오기 함수
   const fetchData = useCallback(async (tab: string) => {
@@ -101,9 +107,19 @@ export default function AdminPage() {
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
     // 탭 변경 시 입력 폼 초기화
+    handleCancelEdit();
+  };
+
+  // ✅ 수정 취소 함수
+  const handleCancelEdit = () => {
+    setIsEditMode(false);
+    setEditingId(null);
     setTitle("");
     setContent("");
+    setCategory("공지");
     setFile(null);
+    setExistingThumbnail("");
+    setExistingFileType("");
   };
 
   // --- 글 등록 ---
@@ -143,13 +159,65 @@ export default function AdminPage() {
     }
   };
 
+  // ✅ 수정 시작 - 기존 데이터 불러오기
+  const handleStartEdit = async (item: any) => {
+    setIsEditMode(true);
+    setEditingId(item.id);
+    setTitle(item.title || "");
+    setContent(item.content || "");
+    setCategory(item.category || "공지");
+    setExistingThumbnail(item.thumbnail || "");
+    setExistingFileType(item.fileType || "");
+    setFile(null); // 새 파일은 비워둠
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // 폼으로 스크롤
+  };
+
+  // ✅ 수정 완료
+  const handleUpdate = async () => {
+    if (!title || !content) return alert("제목과 내용을 입력해주세요.");
+    if (!editingId) return alert("수정할 게시물을 찾을 수 없습니다.");
+
+    setUploading(true);
+    let fileUrl = existingThumbnail; // 기본값은 기존 썸네일
+    let fileType = existingFileType;
+
+    try {
+      // 새 파일이 업로드된 경우에만 새로 업로드
+      if (file) {
+        const storageRef = ref(storage, `${activeTab}/${Date.now()}_${file.name}`);
+        await uploadBytes(storageRef, file);
+        fileUrl = await getDownloadURL(storageRef);
+        fileType = file.type.startsWith("video") ? "video" : "image";
+      }
+
+      await updateDoc(doc(db, activeTab, editingId), {
+        title,
+        content,
+        category: activeTab === 'news' ? category : null,
+        thumbnail: fileUrl,
+        fileType,
+        // 수정일은 업데이트하지 않고 원본 유지
+      });
+
+      alert("수정되었습니다!");
+      handleCancelEdit();
+      fetchData(activeTab);
+    } catch (e) {
+      console.error(e);
+      alert("수정 실패");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   // --- 글 삭제 ---
   const handleDelete = async (id: string) => {
     if(!confirm("정말 삭제하시겠습니까? (복구 불가)")) return;
     try {
-      let collectionName = activeTab; 
+      let collectionName = activeTab;
       await deleteDoc(doc(db, collectionName, id));
       alert("삭제되었습니다.");
+      handleCancelEdit(); // 삭제 시 수정 모드도 취소
       fetchData(activeTab);
     } catch (e) {
       console.error(e);
@@ -258,9 +326,28 @@ export default function AdminPage() {
               </div>
             ) : (
               <>
-                <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                  <Upload size={20} /> 새 글 등록 ({activeTab === 'tips' ? '꿀팁' : '뉴스'})
-                </h2>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-bold flex items-center gap-2">
+                    {isEditMode ? (
+                      <>
+                        <Edit2 size={20} className="text-orange-600" />
+                        <span className="text-orange-600">글 수정</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload size={20} /> 새 글 등록 ({activeTab === 'tips' ? '꿀팁' : '뉴스'})
+                      </>
+                    )}
+                  </h2>
+                  {isEditMode && (
+                    <button
+                      onClick={handleCancelEdit}
+                      className="text-gray-400 hover:text-red-500 flex items-center gap-1 text-sm"
+                    >
+                      <X size={16}/> 취소
+                    </button>
+                  )}
+                </div>
                 <div className="space-y-4">
                   {/* ✅ 뉴스 탭일 때만 카테고리 선택 노출 */}
                   {activeTab === 'news' && (
@@ -285,9 +372,38 @@ export default function AdminPage() {
                         {file ? <span className="text-blue-600 font-bold">{file.name}</span> : "사진/동영상 클릭하여 업로드"}
                     </label>
                   </div>
-                  <button onClick={handleUpload} disabled={uploading} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold transition shadow-md disabled:bg-gray-400">
-                    {uploading ? "업로드 중..." : "등록하기"}
+                  {existingThumbnail && !file && (
+                    <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                      <p className="text-xs text-gray-500 mb-2">기존 파일:</p>
+                      {existingFileType === "video" ? (
+                        <video src={existingThumbnail} className="w-full h-32 object-cover rounded" />
+                      ) : (
+                        <img src={existingThumbnail} alt="기존 썸네일" className="w-full h-32 object-cover rounded" />
+                      )}
+                      <p className="text-xs text-gray-400 mt-2">* 새 파일을 업로드하지 않으면 기존 파일이 유지됩니다</p>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={isEditMode ? handleUpdate : handleUpload}
+                    disabled={uploading}
+                    className={`w-full py-3 rounded-xl font-bold transition shadow-md disabled:bg-gray-400 ${
+                      isEditMode
+                        ? "bg-orange-600 hover:bg-orange-700 text-white"
+                        : "bg-blue-600 hover:bg-blue-700 text-white"
+                    }`}
+                  >
+                    {uploading ? (isEditMode ? "수정 중..." : "업로드 중...") : (isEditMode ? "수정하기" : "등록하기")}
                   </button>
+
+                  {isEditMode && (
+                    <button
+                      onClick={handleCancelEdit}
+                      className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-bold transition"
+                    >
+                      수정 취소
+                    </button>
+                  )}
                 </div>
               </>
             )}
@@ -308,7 +424,9 @@ export default function AdminPage() {
                 </div>
               ) : (
                 list.map((item) => (
-                  <div key={item.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex justify-between items-center group hover:border-blue-300 transition">
+                  <div key={item.id} className={`bg-white p-4 rounded-xl shadow-sm border flex justify-between items-center group hover:border-blue-300 transition ${
+                    editingId === item.id ? 'border-orange-400 bg-orange-50' : 'border-gray-200'
+                  }`}>
                     <div className="flex-1 truncate pr-4">
                       <div className="flex items-center gap-2 mb-1">
                         {/* 카테고리 뱃지 표시 */}
@@ -338,14 +456,25 @@ export default function AdminPage() {
                     {item.thumbnail && (
                       <img src={item.thumbnail} alt="thumb" className="w-10 h-10 rounded-lg object-cover bg-gray-100 mr-3 border border-gray-200"/>
                     )}
-                    
-                    <button 
-                      onClick={() => handleDelete(item.id)}
-                      className="text-gray-300 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition"
-                      title="삭제하기"
-                    >
-                      <Trash2 size={18}/>
-                    </button>
+
+                    <div className="flex gap-2">
+                      {activeTab !== 'reviews' && (
+                        <button
+                          onClick={() => handleStartEdit(item)}
+                          className="text-gray-300 hover:text-orange-500 p-2 rounded-lg hover:bg-orange-50 transition"
+                          title="수정하기"
+                        >
+                          <Edit2 size={18}/>
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="text-gray-300 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition"
+                        title="삭제하기"
+                      >
+                        <Trash2 size={18}/>
+                      </button>
+                    </div>
                   </div>
                 ))
               )}
