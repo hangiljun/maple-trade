@@ -1,1 +1,1 @@
-export const KAKAO_LINK = "https://open.kakao.com/o/sx49Xazi";
+export const KAKAO_LINK = "https://open.kakao.com/o/sX62kSBi";
