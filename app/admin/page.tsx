@@ -42,6 +42,8 @@ export default function AdminPage() {
   const [title, setTitle] = useState("");
   const [blocks, setBlocks] = useState<ContentBlock[]>([]); // 블록 배열
   const [category, setCategory] = useState("공지");
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null); // 썸네일 파일
+  const [existingThumbnail, setExistingThumbnail] = useState<string>(""); // 기존 썸네일 URL
   const [uploading, setUploading] = useState(false);
 
   // ✅ 수정 모드 상태
@@ -123,6 +125,8 @@ export default function AdminPage() {
     setTitle("");
     setBlocks([]);
     setCategory("공지");
+    setThumbnailFile(null);
+    setExistingThumbnail("");
   };
 
   // ✅ 블록 추가 함수
@@ -173,6 +177,14 @@ export default function AdminPage() {
     setUploading(true);
 
     try {
+      // 썸네일 업로드 (별도)
+      let thumbnailUrl = '';
+      if (thumbnailFile) {
+        const thumbRef = ref(storage, `${activeTab}/thumbnails/${Date.now()}_${thumbnailFile.name}`);
+        await uploadBytes(thumbRef, thumbnailFile);
+        thumbnailUrl = await getDownloadURL(thumbRef);
+      }
+
       // 이미지 블록들의 파일 업로드
       const uploadedBlocks = await Promise.all(
         blocks.map(async (block) => {
@@ -190,15 +202,11 @@ export default function AdminPage() {
         })
       );
 
-      // 첫 번째 이미지를 썸네일로 사용
-      const firstImage = uploadedBlocks.find(b => b.type === 'image');
-      const thumbnail = firstImage?.url || '';
-
       await addDoc(collection(db, activeTab), {
         title,
         blocks: uploadedBlocks,
         category: activeTab === 'news' ? category : null,
-        thumbnail,
+        thumbnail: thumbnailUrl, // 별도 업로드한 썸네일
         date: new Date().toLocaleDateString('ko-KR'),
         createdAt: new Date()
       });
@@ -207,6 +215,7 @@ export default function AdminPage() {
       setTitle("");
       setBlocks([]);
       setCategory("공지");
+      setThumbnailFile(null);
       // 업로드 후 목록 갱신
       fetchData(activeTab);
     } catch (e) {
@@ -223,6 +232,7 @@ export default function AdminPage() {
     setEditingId(item.id);
     setTitle(item.title || "");
     setCategory(item.category || "공지");
+    setExistingThumbnail(item.thumbnail || ""); // 기존 썸네일 URL
 
     // 블록 데이터가 있으면 로드, 없으면 빈 배열
     if (item.blocks && Array.isArray(item.blocks)) {
@@ -249,6 +259,14 @@ export default function AdminPage() {
     setUploading(true);
 
     try {
+      // 썸네일 업로드 (새 파일이 있으면)
+      let thumbnailUrl = existingThumbnail; // 기본값은 기존 썸네일
+      if (thumbnailFile) {
+        const thumbRef = ref(storage, `${activeTab}/thumbnails/${Date.now()}_${thumbnailFile.name}`);
+        await uploadBytes(thumbRef, thumbnailFile);
+        thumbnailUrl = await getDownloadURL(thumbRef);
+      }
+
       // 이미지 블록들의 파일 업로드
       const uploadedBlocks = await Promise.all(
         blocks.map(async (block) => {
@@ -268,15 +286,11 @@ export default function AdminPage() {
         })
       );
 
-      // 첫 번째 이미지를 썸네일로 사용
-      const firstImage = uploadedBlocks.find(b => b.type === 'image');
-      const thumbnail = firstImage?.url || '';
-
       await updateDoc(doc(db, activeTab, editingId), {
         title,
         blocks: uploadedBlocks,
         category: activeTab === 'news' ? category : null,
-        thumbnail,
+        thumbnail: thumbnailUrl, // 별도 관리되는 썸네일
         // 수정일은 업데이트하지 않고 원본 유지
       });
 
@@ -445,6 +459,31 @@ export default function AdminPage() {
                   )}
 
                   <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="제목을 입력하세요" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"/>
+
+                  {/* 썸네일 업로드 (목록용) */}
+                  <div className="border-2 border-dashed border-purple-300 rounded-lg p-4 bg-purple-50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <ImageIcon size={16} className="text-purple-600" />
+                      <span className="text-sm font-bold text-purple-700">썸네일 사진 (목록용)</span>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setThumbnailFile(e.target.files?.[0] || null)}
+                      className="text-sm w-full"
+                      id="thumbnail-upload"
+                    />
+                    {thumbnailFile && (
+                      <p className="text-xs text-purple-600 mt-2 font-medium">✓ {thumbnailFile.name}</p>
+                    )}
+                    {existingThumbnail && !thumbnailFile && (
+                      <div className="mt-2">
+                        <img src={existingThumbnail} alt="기존 썸네일" className="w-20 h-20 object-cover rounded border" />
+                        <p className="text-xs text-gray-500 mt-1">기존 썸네일 (새 파일 선택 시 변경)</p>
+                      </div>
+                    )}
+                    <p className="text-xs text-gray-500 mt-2">* 목록에서 보이는 미리보기 이미지입니다</p>
+                  </div>
 
                   {/* 블록 추가 버튼 */}
                   <div className="flex gap-2">
