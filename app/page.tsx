@@ -189,6 +189,105 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* SEO 콘텐츠 섹션 */}
+      <section className="max-w-4xl mx-auto px-4 w-full py-16" aria-labelledby="seo-content">
+        <article className="prose prose-lg max-w-none">
+          <h2 id="seo-content" className="text-3xl font-bold text-gray-900 mb-6">메이플급처 - 정확한 시세 측정으로 손해 없는 거래</h2>
+
+          <h3 className="text-2xl font-bold text-gray-800 mt-8 mb-4">메이플 급처템, 왜 시세 확인이 중요할까요?</h3>
+          <p className="text-gray-700 leading-relaxed mb-4">
+            메이플스토리 유저 대부분은 보스 레이드, 사냥, 캐릭터 육성에 집중하며 경매장 시세를 매일 확인하기 어렵습니다. 아이템을 한 번 구매한 후에는 현재 가격을 잘 모르는 경우가 많습니다.
+          </p>
+
+          <div className="bg-blue-50 border-l-4 border-blue-600 p-6 my-6 rounded-r-lg">
+            <p className="font-bold text-gray-800 mb-3">하지만 메이플 아이템 시세는 생각보다 빠르게 변합니다:</p>
+            <ul className="space-y-2 text-gray-700">
+              <li className="flex items-center gap-2">
+                <span className="text-red-500 font-bold">📉</span> 대형 패치 후 500억 템이 300억으로 하락
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-green-500 font-bold">📈</span> 여름방학 시즌에 300억 템이 800억으로 상승
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-blue-500 font-bold">🔄</span> 신규 직업 출시로 특정 템 가격 급등
+              </li>
+            </ul>
+          </div>
+
+          <h3 className="text-2xl font-bold text-gray-800 mt-8 mb-4">정보 비대칭의 함정 - 메이플급처가 해결합니다</h3>
+          <p className="text-gray-700 leading-relaxed mb-4">
+            전문 거래상들은 경매장을 24시간 모니터링하며 시세 변동에 즉각 대응합니다. 고성능 확성기로 <strong className="text-red-600">"급처템 80~90% 가격에 삽니다"</strong>라고 외치지만, 정확한 현재 시세는 알려주지 않습니다.
+          </p>
+
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-xl border border-blue-200 my-6">
+            <p className="font-bold text-blue-900 mb-3">메이플급처는 다릅니다:</p>
+            <ul className="space-y-2 text-gray-700">
+              <li className="flex items-center gap-2">
+                <CheckCircle size={18} className="text-green-600 flex-shrink-0" /> 현재 경매장 매물 실시간 비교
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle size={18} className="text-green-600 flex-shrink-0" /> 최근 거래 내역 공개
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle size={18} className="text-green-600 flex-shrink-0" /> 옵션별 차액 상세 설명
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle size={18} className="text-green-600 flex-shrink-0" /> 시세 변동 요인 투명 공개
+              </li>
+            </ul>
+          </div>
+
+          <h3 className="text-2xl font-bold text-gray-800 mt-8 mb-4">메이플급처만의 3가지 차별점</h3>
+
+          <div className="grid md:grid-cols-3 gap-6 my-6">
+            <div className="bg-white p-6 rounded-xl border-2 border-blue-100 hover:border-blue-300 transition">
+              <div className="text-3xl mb-3">🎯</div>
+              <h4 className="font-bold text-lg text-gray-800 mb-2">투명한 시세 측정</h4>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                단순히 가격만 제시하지 않습니다. 현재 매물, 거래 사례, 옵션 비교를 함께 설명해 판매자가 100% 납득하고 거래할 수 있도록 합니다.
+              </p>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl border-2 border-blue-100 hover:border-blue-300 transition">
+              <div className="text-3xl mb-3">📊</div>
+              <h4 className="font-bold text-lg text-gray-800 mb-2">실시간 경매장 분석</h4>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                메이플 전 서버 경매장 시세를 실시간으로 확인하여 가장 정확한 가격을 제시합니다.
+              </p>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl border-2 border-blue-100 hover:border-blue-300 transition">
+              <div className="text-3xl mb-3">⚡</div>
+              <h4 className="font-bold text-lg text-gray-800 mb-2">평균 5분 내 빠른 거래</h4>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                시세 확인부터 거래 완료까지 평균 5분. 복잡한 절차 없이 빠르고 안전하게 진행됩니다.
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-8 rounded-2xl text-center my-8 shadow-lg">
+            <h3 className="text-2xl font-bold mb-3">지금 바로 메이플급처에서 정확한 시세를 확인하세요</h3>
+            <p className="text-blue-100 mb-6">
+              메이플 급처템 판매 전, 정확한 시세 측정은 필수입니다.<br />
+              손해 없는 거래의 시작, <strong>메이플급처</strong>와 함께하세요.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+              <a
+                href={KAKAO_LINK}
+                target="_blank"
+                rel="noreferrer"
+                className="bg-[#FEE500] text-[#3A1D1D] px-8 py-4 rounded-full font-black hover:bg-yellow-400 transition shadow-xl flex items-center gap-2 transform hover:scale-105"
+              >
+                <MessageCircle size={20} fill="#3A1D1D" /> 카카오톡으로 상담하기
+              </a>
+              <span className="text-sm text-blue-100">
+                📞 카카오톡 ID: <strong className="text-white">han8246</strong> | 연중무휴 24시간 상담
+              </span>
+            </div>
+          </div>
+        </article>
+      </section>
+
       {/* 3. 특징 및 타 사이트 비교 */}
       <section className="bg-white py-16 w-full border-y border-gray-100">
         <div className="max-w-7xl mx-auto px-4">
