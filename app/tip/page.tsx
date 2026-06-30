@@ -118,46 +118,68 @@ export default async function TipPage() {
 
       <div className="border-t-2 border-gray-100 my-16"></div>
 
-      {/* 2. 하단 게시판 영역 */}
+      {/* 2. 하단 게시판 영역 - 메이플 이슈 스타일 */}
       <section>
-        <div className="text-center mb-10">
-          <h2 className="text-2xl font-black text-gray-800 flex items-center justify-center gap-2">
-            <FileText className="text-gray-400"/> 추가 이용 팁 & 공지
+        <div className="mb-6 border-b-2 border-gray-900 pb-4">
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <FileText className="text-purple-600"/> 추가 이용 팁 & 공지
           </h2>
-          <p className="text-gray-500 mt-2 text-sm">관리자가 직접 작성한 상세 가이드입니다.</p>
+          <p className="text-sm text-gray-500 mt-1">관리자가 직접 작성한 상세 가이드입니다.</p>
         </div>
 
-        {tipsList.length === 0 ? (
-          <div className="text-center py-10 bg-gray-50 rounded-xl text-gray-400">등록된 추가 게시글이 없습니다.</div>
-        ) : (
-          <div className="space-y-8">
-            {tipsList.map((item) => (
-              <article key={item.id} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="w-1.5 h-6 bg-purple-500 rounded-full"></span>
-                  <h3 className="text-xl font-bold text-gray-800">{item.title}</h3>
-                </div>
+        <div className="bg-white border-t border-gray-200">
+          {tipsList.length === 0 ? (
+            <div className="text-center py-20 text-gray-400">등록된 게시글이 없습니다.</div>
+          ) : (
+            <ul className="divide-y divide-gray-100">
+              {tipsList.map((item) => {
+                const getCategoryColor = (cat: string) => {
+                  switch (cat) {
+                    case "공지": return "text-red-500 font-bold";
+                    case "이용팁": return "text-purple-600 font-bold";
+                    case "안전거래": return "text-blue-600 font-bold";
+                    case "가이드": return "text-green-600 font-bold";
+                    default: return "text-gray-500";
+                  }
+                };
+                const today = new Date().toLocaleDateString('ko-KR');
 
-                {item.thumbnail && (
-                  <div className="mb-6 rounded-xl overflow-hidden border border-gray-100 bg-gray-50 text-center">
-                    {item.fileType === 'video' ? (
-                      <video src={item.thumbnail} controls className="max-w-full max-h-[500px] mx-auto" />
-                    ) : (
-                      <ImageViewer src={item.thumbnail} alt={`메이플급처 꿀팁 - ${item.title}`} />
-                    )}
-                  </div>
-                )}
-
-                <div className="text-gray-700 leading-relaxed whitespace-pre-line bg-gray-50 p-5 rounded-xl text-sm md:text-base border border-gray-100">
-                  {item.content}
-                </div>
-                <div className="text-right mt-3">
-                  <span className="text-xs text-gray-400 font-medium">{item.date} 작성됨</span>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
+                return (
+                  <li key={item.id} className="hover:bg-gray-50 transition duration-150">
+                    <Link href={`/tip/${item.id}`} className="block px-2 py-4 sm:px-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <span className={`flex-shrink-0 text-sm ${getCategoryColor(item.category)}`}>[{item.category || "공지"}]</span>
+                            <h3 className="text-base sm:text-lg font-medium text-gray-900 truncate pr-4">{item.title}</h3>
+                            {item.date === today && <span className="w-4 h-4 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-sm font-bold">N</span>}
+                          </div>
+                          <div className="flex items-center text-xs sm:text-sm text-gray-400 gap-3">
+                            <div className="flex items-center gap-1.5">
+                              <img src="/favicon.ico" alt="admin" width={16} height={16} className="rounded-full border border-gray-200" />
+                              <span className="font-medium text-gray-600">관리자</span>
+                            </div>
+                            <span className="w-px h-3 bg-gray-300"></span>
+                            <span>{item.date}</span>
+                          </div>
+                        </div>
+                        {item.thumbnail && (
+                          <div className="flex-shrink-0 w-20 h-16 sm:w-28 sm:h-20 rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-gray-50">
+                            {item.fileType === 'video' ? (
+                              <video src={item.thumbnail} className="w-full h-full object-cover" muted />
+                            ) : (
+                              <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
       </section>
 
       <div className="mt-20 text-center">

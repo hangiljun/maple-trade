@@ -217,7 +217,7 @@ export default function AdminPage() {
       await addDoc(collection(db, activeTab), {
         title,
         blocks: uploadedBlocks,
-        category: activeTab === 'news' ? category : null,
+        category: (activeTab === 'news' || activeTab === 'tips') ? category : null,
         thumbnail: thumbnailUrl, // 별도 업로드한 썸네일
         date: new Date().toLocaleDateString('ko-KR'),
         createdAt: new Date()
@@ -304,7 +304,7 @@ export default function AdminPage() {
       await updateDoc(doc(db, activeTab, editingId), {
         title,
         blocks: uploadedBlocks,
-        category: activeTab === 'news' ? category : null,
+        category: (activeTab === 'news' || activeTab === 'tips') ? category : null,
         thumbnail: thumbnailUrl, // 별도 관리되는 썸네일
         // 수정일은 업데이트하지 않고 원본 유지
       });
@@ -459,10 +459,10 @@ export default function AdminPage() {
                   )}
                 </div>
                 <div className="space-y-4">
-                  {/* ✅ 뉴스 탭일 때만 카테고리 선택 노출 */}
+                  {/* ✅ 카테고리 선택 */}
                   {activeTab === 'news' && (
-                    <select 
-                      value={category} 
+                    <select
+                      value={category}
                       onChange={(e) => setCategory(e.target.value)}
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                     >
@@ -470,6 +470,18 @@ export default function AdminPage() {
                       <option value="이벤트">이벤트</option>
                       <option value="패치">패치</option>
                       <option value="점검">점검</option>
+                    </select>
+                  )}
+                  {activeTab === 'tips' && (
+                    <select
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                    >
+                      <option value="공지">공지</option>
+                      <option value="이용팁">이용팁</option>
+                      <option value="안전거래">안전거래</option>
+                      <option value="가이드">가이드</option>
                     </select>
                   )}
 
