@@ -109,7 +109,12 @@ export default async function TipDetail({ params }: Props) {
                 <div key={index}>
                   {block.type === 'text' ? (
                     <div
-                      className="text-gray-800 leading-relaxed ql-editor"
+                      className="ql-editor prose prose-lg max-w-none"
+                      style={{
+                        color: '#1f2937',
+                        fontSize: '16px',
+                        lineHeight: '1.75'
+                      }}
                       dangerouslySetInnerHTML={{ __html: block.content || '' }}
                     />
                   ) : block.type === 'image' && block.url ? (

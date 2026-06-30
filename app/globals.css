@@ -5,53 +5,71 @@
 /* Quill 에디터 스타일 */
 .ql-editor {
   padding: 0 !important;
-  font-size: 16px;
-  line-height: 1.75;
-  color: #1f2937;
+  font-size: 16px !important;
+  line-height: 1.75 !important;
+  color: #1f2937 !important;
 }
 
 .ql-editor p {
-  margin-bottom: 1em;
+  margin-bottom: 1em !important;
+  color: #1f2937 !important;
 }
 
 .ql-editor strong {
-  font-weight: 700;
+  font-weight: 700 !important;
+  color: inherit !important;
 }
 
 .ql-editor em {
-  font-style: italic;
+  font-style: italic !important;
 }
 
 .ql-editor u {
-  text-decoration: underline;
+  text-decoration: underline !important;
 }
 
 .ql-editor h1 {
-  font-size: 2em;
-  font-weight: bold;
-  margin-bottom: 0.5em;
+  font-size: 2em !important;
+  font-weight: bold !important;
+  margin-bottom: 0.5em !important;
+  color: #111827 !important;
 }
 
 .ql-editor h2 {
-  font-size: 1.5em;
-  font-weight: bold;
-  margin-bottom: 0.5em;
+  font-size: 1.5em !important;
+  font-weight: bold !important;
+  margin-bottom: 0.5em !important;
+  color: #111827 !important;
 }
 
 .ql-editor h3 {
-  font-size: 1.25em;
-  font-weight: bold;
-  margin-bottom: 0.5em;
+  font-size: 1.25em !important;
+  font-weight: bold !important;
+  margin-bottom: 0.5em !important;
+  margin-top: 1em !important;
+  color: #111827 !important;
 }
 
 .ql-editor ul,
 .ql-editor ol {
-  margin-left: 1.5em;
-  margin-bottom: 1em;
+  margin-left: 1.5em !important;
+  margin-bottom: 1em !important;
+  padding-left: 1.5em !important;
 }
 
 .ql-editor li {
-  margin-bottom: 0.25em;
+  margin-bottom: 0.5em !important;
+  color: #1f2937 !important;
+  list-style-type: disc !important;
+}
+
+.ql-editor ol li {
+  list-style-type: decimal !important;
+}
+
+.ql-editor a {
+  color: #2563eb !important;
+  text-decoration: underline !important;
 }
 
 @keyframes neon-flicker {
