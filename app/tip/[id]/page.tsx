@@ -93,16 +93,14 @@ export default async function TipDetail({ params }: Props) {
 
         <div className="p-8 min-h-[300px] text-gray-800 leading-relaxed">
           {/* 디버깅: 데이터 확인 */}
-          {process.env.NODE_ENV === 'development' && (
-            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-xs">
-              <p><strong>디버그:</strong></p>
-              <p>blocks 존재: {post.blocks ? 'Yes' : 'No'}</p>
-              <p>blocks 배열: {Array.isArray(post.blocks) ? 'Yes' : 'No'}</p>
-              <p>blocks 길이: {post.blocks?.length || 0}</p>
-              <p>content 존재: {post.content ? 'Yes' : 'No'}</p>
-              {post.blocks && <pre className="mt-2 text-xs overflow-auto">{JSON.stringify(post.blocks, null, 2)}</pre>}
-            </div>
-          )}
+          <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-xs">
+            <p><strong>디버그:</strong></p>
+            <p>blocks 존재: {post.blocks ? 'Yes' : 'No'}</p>
+            <p>blocks 배열: {Array.isArray(post.blocks) ? 'Yes' : 'No'}</p>
+            <p>blocks 길이: {post.blocks?.length || 0}</p>
+            <p>content 존재: {post.content ? 'Yes' : 'No'}</p>
+            {post.blocks && <pre className="mt-2 text-xs overflow-auto max-h-40">{JSON.stringify(post.blocks, null, 2)}</pre>}
+          </div>
 
           {/* 블록 기반 렌더링 */}
           {post.blocks && Array.isArray(post.blocks) && post.blocks.length > 0 ? (
