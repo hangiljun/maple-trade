@@ -1,8 +1,7 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import dynamic from 'next/dynamic';
 import {
-  collection, addDoc, deleteDoc, doc, getDocs, query, orderBy, updateDoc, getDoc
+  collection, addDoc, deleteDoc, doc, getDocs, query, orderBy, updateDoc
 } from "firebase/firestore";
 import {
   ref, uploadBytes, getDownloadURL
@@ -11,11 +10,8 @@ import {
   signInWithEmailAndPassword, signOut, onAuthStateChanged, User
 } from "firebase/auth";
 import { db, storage, auth } from '../../firebase';
-import { Trash2, Upload, LogOut, Lock, ShieldAlert, Key, User as UserIcon, MessageCircle, Edit2, X, Plus, Image as ImageIcon, Type, MoveUp, MoveDown } from "lucide-react";
-import 'react-quill/dist/quill.snow.css';
-
-// Quill 에디터 동적 import (SSR 방지)
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+import { Trash2, Upload, LogOut, Lock, ShieldAlert, Key, User as UserIcon, MessageCircle, Edit2, X, Plus, Image as ImageIcon, Type } from "lucide-react";
+import BlockEditor from '../components/BlockEditor';
 
 // 🔒 [보안] 관리자 이메일 설정
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "6332159@gmail.com";
@@ -24,9 +20,9 @@ const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "6332159@gmail.com";
 type ContentBlock = {
   id: string;
   type: 'text' | 'image';
-  content?: string; // 텍스트 블록의 내용 (HTML)
-  url?: string; // 이미지 블록의 URL
-  file?: File | null; // 업로드할 파일 (임시)
+  content?: string;
+  url?: string;
+  file?: File | null;
 };
 
 export default function AdminPage() {
@@ -40,15 +36,15 @@ export default function AdminPage() {
   const [inputPassword, setInputPassword] = useState("");
 
   // --- 데이터 상태 ---
-  const [activeTab, setActiveTab] = useState("tips"); // tips | news | reviews
+  const [activeTab, setActiveTab] = useState("tips");
   const [list, setList] = useState<any[]>([]);
 
   // 글쓰기 폼 상태
   const [title, setTitle] = useState("");
-  const [blocks, setBlocks] = useState<ContentBlock[]>([]); // 블록 배열
+  const [blocks, setBlocks] = useState<ContentBlock[]>([]);
   const [category, setCategory] = useState("공지");
-  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null); // 썸네일 파일
-  const [existingThumbnail, setExistingThumbnail] = useState<string>(""); // 기존 썸네일 URL
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [existingThumbnail, setExistingThumbnail] = useState<string>("");
   const [uploading, setUploading] = useState(false);
 
   // ✅ 수정 모드 상태
@@ -119,7 +115,6 @@ export default function AdminPage() {
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
-    // 탭 변경 시 입력 폼 초기화
     handleCancelEdit();
   };
 
@@ -137,14 +132,18 @@ export default function AdminPage() {
   // ✅ 블록 추가 함수
   const addTextBlock = useCallback(() => {
     setBlocks(prev => [...prev, {
-      id: Date.now().toString(),
+      id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       type: 'text',
       content: ''
     }]);
   }, []);
 
   const addImageBlock = useCallback(() => {
-    setBlocks(prev => [...prev, { id: Date.now().toString(), type: 'image', url: '' }]);
+    setBlocks(prev => [...prev, {
+      id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      type: 'image',
+      url: ''
+    }]);
   }, []);
 
   // ✅ 블록 삭제 (useCallback 적용)
@@ -190,7 +189,6 @@ export default function AdminPage() {
     setUploading(true);
 
     try {
-      // 썸네일 업로드 (별도)
       let thumbnailUrl = '';
       if (thumbnailFile) {
         const thumbRef = ref(storage, `${activeTab}/thumbnails/${Date.now()}_${thumbnailFile.name}`);
@@ -198,7 +196,6 @@ export default function AdminPage() {
         thumbnailUrl = await getDownloadURL(thumbRef);
       }
 
-      // 이미지 블록들의 파일 업로드
       const uploadedBlocks = await Promise.all(
         blocks.map(async (block) => {
           if (block.type === 'image' && block.file) {
@@ -207,10 +204,7 @@ export default function AdminPage() {
             const url = await getDownloadURL(storageRef);
             return { type: 'image', url };
           } else if (block.type === 'text') {
-            return {
-              type: 'text',
-              content: block.content || ''
-            };
+            return { type: 'text', content: block.content || '' };
           } else if (block.type === 'image' && block.url) {
             return { type: 'image', url: block.url };
           }
@@ -222,7 +216,7 @@ export default function AdminPage() {
         title,
         blocks: uploadedBlocks,
         category: (activeTab === 'news' || activeTab === 'tips') ? category : null,
-        thumbnail: thumbnailUrl, // 별도 업로드한 썸네일
+        thumbnail: thumbnailUrl,
         date: new Date().toLocaleDateString('ko-KR'),
         createdAt: new Date()
       });
@@ -232,7 +226,6 @@ export default function AdminPage() {
       setBlocks([]);
       setCategory("공지");
       setThumbnailFile(null);
-      // 업로드 후 목록 갱신
       fetchData(activeTab);
     } catch (e) {
       console.error(e);
@@ -244,15 +237,12 @@ export default function AdminPage() {
 
   // ✅ 수정 시작 - 기존 데이터 불러오기
   const handleStartEdit = async (item: any) => {
-    console.log("수정할 아이템:", item); // 🔍 디버깅용
-
     setIsEditMode(true);
     setEditingId(item.id);
     setTitle(item.title || "");
     setCategory(item.category || "공지");
-    setExistingThumbnail(item.thumbnail || ""); // 기존 썸네일 URL
+    setExistingThumbnail(item.thumbnail || "");
 
-    // 블록 데이터가 있으면 로드
     if (item.blocks && Array.isArray(item.blocks) && item.blocks.length > 0) {
       const baseTime = Date.now();
       const loadedBlocks = item.blocks.map((block: any, index: number) => ({
@@ -262,14 +252,10 @@ export default function AdminPage() {
         url: block.type === 'image' ? (block.url || '') : undefined,
         file: null
       }));
-      console.log("로드된 블록:", loadedBlocks); // 🔍 디버깅용
       setBlocks(loadedBlocks);
-    }
-    // 구버전 데이터: content와 image 필드로 저장된 경우
-    else if (item.content || item.image) {
+    } else if (item.content || item.image) {
       const legacyBlocks: ContentBlock[] = [];
       const baseTime = Date.now();
-
       if (item.content) {
         legacyBlocks.push({
           id: `edit_${baseTime}_0_text`,
@@ -284,15 +270,12 @@ export default function AdminPage() {
           url: item.image
         });
       }
-      console.log("구버전 데이터를 블록으로 변환:", legacyBlocks); // 🔍 디버깅용
       setBlocks(legacyBlocks);
-    }
-    else {
-      console.warn("블록 데이터가 없습니다. 빈 배열로 시작합니다."); // 🔍 디버깅용
+    } else {
       setBlocks([]);
     }
 
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // 폼으로 스크롤
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // ✅ 수정 완료
@@ -304,30 +287,23 @@ export default function AdminPage() {
     setUploading(true);
 
     try {
-      // 썸네일 업로드 (새 파일이 있으면)
-      let thumbnailUrl = existingThumbnail; // 기본값은 기존 썸네일
+      let thumbnailUrl = existingThumbnail;
       if (thumbnailFile) {
         const thumbRef = ref(storage, `${activeTab}/thumbnails/${Date.now()}_${thumbnailFile.name}`);
         await uploadBytes(thumbRef, thumbnailFile);
         thumbnailUrl = await getDownloadURL(thumbRef);
       }
 
-      // 이미지 블록들의 파일 업로드
       const uploadedBlocks = await Promise.all(
         blocks.map(async (block) => {
           if (block.type === 'image' && block.file) {
-            // 새 파일이 있으면 업로드
             const storageRef = ref(storage, `${activeTab}/${Date.now()}_${block.file.name}`);
             await uploadBytes(storageRef, block.file);
             const url = await getDownloadURL(storageRef);
             return { type: 'image', url };
           } else if (block.type === 'text') {
-            return {
-              type: 'text',
-              content: block.content || ''
-            };
+            return { type: 'text', content: block.content || '' };
           } else if (block.type === 'image' && block.url) {
-            // 기존 이미지 URL 유지
             return { type: 'image', url: block.url };
           }
           return block;
@@ -338,8 +314,7 @@ export default function AdminPage() {
         title,
         blocks: uploadedBlocks,
         category: (activeTab === 'news' || activeTab === 'tips') ? category : null,
-        thumbnail: thumbnailUrl, // 별도 관리되는 썸네일
-        // 수정일은 업데이트하지 않고 원본 유지
+        thumbnail: thumbnailUrl,
       });
 
       alert("수정되었습니다!");
@@ -357,10 +332,9 @@ export default function AdminPage() {
   const handleDelete = async (id: string) => {
     if(!confirm("정말 삭제하시겠습니까? (복구 불가)")) return;
     try {
-      let collectionName = activeTab;
-      await deleteDoc(doc(db, collectionName, id));
+      await deleteDoc(doc(db, activeTab, id));
       alert("삭제되었습니다.");
-      handleCancelEdit(); // 삭제 시 수정 모드도 취소
+      handleCancelEdit();
       fetchData(activeTab);
     } catch (e) {
       console.error(e);
@@ -456,7 +430,7 @@ export default function AdminPage() {
 
         <div className="grid md:grid-cols-2 gap-8">
 
-          {/* 왼쪽: 글쓰기 폼 (이용후기 탭에서는 숨김) */}
+          {/* 왼쪽: 글쓰기 폼 */}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 h-fit">
             {activeTab === 'reviews' ? (
               <div className="text-center py-10">
@@ -492,7 +466,7 @@ export default function AdminPage() {
                   )}
                 </div>
                 <div className="space-y-4">
-                  {/* ✅ 카테고리 선택 */}
+                  {/* 카테고리 선택 */}
                   {activeTab === 'news' && (
                     <select
                       value={category}
@@ -520,7 +494,7 @@ export default function AdminPage() {
 
                   <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="제목을 입력하세요" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"/>
 
-                  {/* 썸네일 업로드 (목록용) */}
+                  {/* 썸네일 업로드 */}
                   <div className="border-2 border-dashed border-purple-300 rounded-lg p-4 bg-purple-50">
                     <div className="flex items-center gap-2 mb-2">
                       <ImageIcon size={16} className="text-purple-600" />
@@ -531,7 +505,6 @@ export default function AdminPage() {
                       accept="image/*"
                       onChange={(e) => setThumbnailFile(e.target.files?.[0] || null)}
                       className="text-sm w-full"
-                      id="thumbnail-upload"
                     />
                     {thumbnailFile && (
                       <p className="text-xs text-purple-600 mt-2 font-medium">✓ {thumbnailFile.name}</p>
@@ -563,190 +536,85 @@ export default function AdminPage() {
                     </button>
                   </div>
 
-                  {/* 블록 리스트 */}
+                  {/* ✅ BlockEditor 컴포넌트 사용 - 블록마다 독립적으로 렌더링 */}
                   <div className="space-y-3 max-h-96 overflow-y-auto">
                     {blocks.map((block, index) => (
-                      <div key={block.id} className="border border-gray-200 rounded-lg p-3 bg-gray-50">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-xs font-bold text-gray-500">
-                            {block.type === 'text' ? '📝 텍스트' : '🖼️ 이미지'}
-                          </span>
-                          <div className="flex gap-1">
-                            {index > 0 && (
-                              <button
-                                type="button"
-                                onClick={() => moveBlockUp(index)}
-                                className="text-gray-400 hover:text-blue-600 p-1"
-                                title="위로"
-                              >
-                                <MoveUp size={16} />
-                              </button>
-                            )}
-                            {index < blocks.length - 1 && (
-                              <button
-                                type="button"
-                                onClick={() => moveBlockDown(index)}
-                                className="text-gray-400 hover:text-blue-600 p-1"
-                                title="아래로"
-                              >
-                                <MoveDown size={16} />
-                              </button>
-                            )}
-                            <button
-                              type="button"
-                              onClick={() => removeBlock(block.id)}
-                              className="text-gray-400 hover:text-red-600 p-1"
-                              title="삭제"
-                            >
-                              <X size={16} />
-                            </button>
-                          </div>
-                        </div>
-
-                        {block.type === 'text' ? (
-                          <div className="quill-wrapper" key={`wrapper_${block.id}`}>
-                            <ReactQuill
-                              key={`quill_${block.id}_${block.content?.length || 0}`}
-                              value={block.content || ''}
-                              onChange={(value) => updateBlockContent(block.id, value)}
-                              theme="snow"
-                              placeholder="내용을 입력하세요 (드래그해서 스타일 적용)"
-                              modules={{
-                                toolbar: [
-                                  [{ 'header': [1, 2, 3, false] }],
-                                  [{ 'size': ['small', false, 'large', 'huge'] }],
-                                  ['bold', 'italic', 'underline', 'strike'],
-                                  [{ 'color': [] }, { 'background': [] }],
-                                  [{ 'align': [] }],
-                                  [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                                  ['link'],
-                                  ['clean']
-                                ]
-                              }}
-                            />
-                          </div>
-                        ) : (
-                          <div>
-                            {block.url && !block.file ? (
-                              <div className="mb-2">
-                                <img src={block.url} alt="기존 이미지" className="w-full h-32 object-cover rounded border" />
-                                <p className="text-xs text-gray-400 mt-1">기존 이미지 (변경하려면 새 파일 선택)</p>
-                              </div>
-                            ) : null}
-                            <input
-                              type="file"
-                              accept="image/*,video/*"
-                              onChange={(e) => updateBlockFile(block.id, e.target.files?.[0] || null)}
-                              className="text-sm"
-                            />
-                            {block.file && (
-                              <p className="text-xs text-blue-600 mt-1">✓ {block.file.name}</p>
-                            )}
-                          </div>
-                        )}
-                      </div>
+                      <BlockEditor
+                        key={block.id}
+                        block={block}
+                        index={index}
+                        totalBlocks={blocks.length}
+                        onContentChange={updateBlockContent}
+                        onFileChange={updateBlockFile}
+                        onRemove={removeBlock}
+                        onMoveUp={moveBlockUp}
+                        onMoveDown={moveBlockDown}
+                      />
                     ))}
-                    {blocks.length === 0 && (
-                      <p className="text-center text-gray-400 text-sm py-4">
-                        "텍스트 추가" 또는 "이미지 추가" 버튼을 눌러 내용을 작성하세요
-                      </p>
-                    )}
                   </div>
 
+                  {/* 등록/수정 버튼 */}
                   <button
                     onClick={isEditMode ? handleUpdate : handleUpload}
                     disabled={uploading}
-                    className={`w-full py-3 rounded-xl font-bold transition shadow-md disabled:bg-gray-400 ${
-                      isEditMode
-                        ? "bg-orange-600 hover:bg-orange-700 text-white"
-                        : "bg-blue-600 hover:bg-blue-700 text-white"
-                    }`}
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-4 rounded-xl font-bold transition disabled:opacity-50 shadow-lg"
                   >
-                    {uploading ? (isEditMode ? "수정 중..." : "업로드 중...") : (isEditMode ? "수정하기" : "등록하기")}
+                    {uploading ? "처리 중..." : (isEditMode ? "✏️ 수정 완료" : "📤 등록하기")}
                   </button>
-
-                  {isEditMode && (
-                    <button
-                      onClick={handleCancelEdit}
-                      className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-bold transition"
-                    >
-                      수정 취소
-                    </button>
-                  )}
                 </div>
               </>
             )}
           </div>
 
-          {/* 오른쪽: 등록된 목록 (삭제 기능) */}
-          <div className="space-y-4">
-              <h2 className="text-xl font-bold mb-4 flex justify-between items-center">
-                <span>
-                  {activeTab === 'reviews' ? '💬 등록된 후기' : '📋 등록된 글'} ({list.length})
-                </span>
-                <span className="text-xs font-normal text-gray-400">최신순 정렬</span>
-              </h2>
-
+          {/* 오른쪽: 데이터 목록 */}
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              📋 등록된 글 ({list.length}개)
+            </h2>
+            <div className="space-y-3 max-h-[600px] overflow-y-auto">
               {list.length === 0 ? (
-                <div className="text-center py-10 text-gray-400 bg-gray-50 rounded-xl border border-dashed">
-                  등록된 데이터가 없습니다.
-                </div>
+                <p className="text-center text-gray-400 py-10">등록된 글이 없습니다.</p>
               ) : (
                 list.map((item) => (
-                  <div key={item.id} className={`bg-white p-4 rounded-xl shadow-sm border flex justify-between items-center group hover:border-blue-300 transition ${
-                    editingId === item.id ? 'border-orange-400 bg-orange-50' : 'border-gray-200'
-                  }`}>
-                    <div className="flex-1 truncate pr-4">
-                      <div className="flex items-center gap-2 mb-1">
-                        {/* 카테고리 뱃지 표시 */}
+                  <div key={item.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex-1">
                         {item.category && (
-                           <span className="bg-gray-100 text-gray-600 text-[10px] px-1.5 py-0.5 rounded font-bold border border-gray-200">
-                             {item.category}
-                           </span>
-                        )}
-                        {activeTab === 'reviews' && item.server && (
-                          <span className="bg-indigo-50 text-indigo-600 text-[10px] px-1.5 py-0.5 rounded font-bold border border-indigo-100">
-                            {item.server}
+                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-bold mr-2">
+                            {item.category}
                           </span>
                         )}
-                        <h3 className="font-bold text-gray-800 truncate text-sm md:text-base">{item.title}</h3>
-                      </div>
-                      <div className="text-xs text-gray-400 flex gap-2">
-                        <span>{item.date}</span>
-                        {activeTab === 'reviews' && item.author && (
-                          <>
-                            <span className="text-gray-300">|</span>
-                            <span>{item.author}</span>
-                          </>
+                        <h3 className="font-bold text-gray-800">{item.title}</h3>
+                        <p className="text-xs text-gray-400 mt-1">{item.date}</p>
+                        {activeTab === 'reviews' && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            작성자: {item.author} | 서버: {item.server}
+                          </div>
                         )}
                       </div>
-                    </div>
-
-                    {item.thumbnail && (
-                      <img src={item.thumbnail} alt="thumb" className="w-10 h-10 rounded-lg object-cover bg-gray-100 mr-3 border border-gray-200"/>
-                    )}
-
-                    <div className="flex gap-2">
-                      {activeTab !== 'reviews' && (
+                      <div className="flex gap-2 ml-2">
+                        {activeTab !== 'reviews' && (
+                          <button
+                            onClick={() => handleStartEdit(item)}
+                            className="text-blue-500 hover:text-blue-700 p-2"
+                            title="수정"
+                          >
+                            <Edit2 size={16}/>
+                          </button>
+                        )}
                         <button
-                          onClick={() => handleStartEdit(item)}
-                          className="text-gray-300 hover:text-orange-500 p-2 rounded-lg hover:bg-orange-50 transition"
-                          title="수정하기"
+                          onClick={() => handleDelete(item.id)}
+                          className="text-red-400 hover:text-red-600 p-2"
+                          title="삭제"
                         >
-                          <Edit2 size={18}/>
+                          <Trash2 size={16}/>
                         </button>
-                      )}
-                      <button
-                        onClick={() => handleDelete(item.id)}
-                        className="text-gray-300 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition"
-                        title="삭제하기"
-                      >
-                        <Trash2 size={18}/>
-                      </button>
+                      </div>
                     </div>
                   </div>
                 ))
               )}
+            </div>
           </div>
         </div>
       </div>
