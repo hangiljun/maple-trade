@@ -11,10 +11,12 @@ service cloud.firestore {
     }
 
     // ========================================
-    // 관리자 판별 함수
+    // 관리자 판별 함수 (이메일 방식)
     // ========================================
     function isAdmin() {
-      return request.auth != null && request.auth.token.email == '6332159@gmail.com';
+      // 실제 코드(app/admin/page.tsx:79)와 동일한 방식
+      return request.auth != null
+             && request.auth.token.email == '6332159@gmail.com';
     }
 
     // ========================================
@@ -25,18 +27,19 @@ service cloud.firestore {
       allow read: if true;
 
       // 쓰기(생성/수정/삭제): 관리자만 허용
-      allow write: if isAdmin();
+      allow create, update, delete: if isAdmin();
     }
 
     // ========================================
     // Tips 컬렉션 (이용안내/팁)
+    // 📌 주의: 폴더명은 tip(단수)이지만 컬렉션명은 tips(복수)
     // ========================================
     match /tips/{docId} {
       // 읽기: 모든 사용자 허용
       allow read: if true;
 
       // 쓰기(생성/수정/삭제): 관리자만 허용
-      allow write: if isAdmin();
+      allow create, update, delete: if isAdmin();
     }
 
     // ========================================
@@ -46,33 +49,51 @@ service cloud.firestore {
       // 읽기: 모든 사용자 허용
       allow read: if true;
 
-      // 생성: 데이터 검증 후 허용
-      allow create: if request.auth == null  // 비로그인 사용자도 후기 작성 가능
-                    && request.resource.data.keys().hasAll(['title', 'content', 'author', 'server', 'date', 'createdAt', 'views', 'comments'])
-                    && request.resource.data.title is string
-                    && request.resource.data.title.size() > 0
-                    && request.resource.data.title.size() <= 100
-                    && request.resource.data.content is string
-                    && request.resource.data.content.size() > 0
-                    && request.resource.data.content.size() <= 2000
-                    && request.resource.data.author is string
-                    && request.resource.data.author.size() > 0
-                    && request.resource.data.author.size() <= 20
-                    && request.resource.data.server is string
-                    && request.resource.data.views == 0
-                    && request.resource.data.comments is list;
+      // 생성: 비로그인 사용자도 가능, 데이터 검증 필수
+      allow create: if
+        // 필수 필드 존재 확인
+        request.resource.data.keys().hasAll([
+          'title', 'content', 'author', 'server',
+          'date', 'createdAt', 'views', 'comments'
+        ])
+        // title 검증
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 100
+        // content 검증
+        && request.resource.data.content is string
+        && request.resource.data.content.size() > 0
+        && request.resource.data.content.size() <= 2000
+        // author 검증
+        && request.resource.data.author is string
+        && request.resource.data.author.size() > 0
+        && request.resource.data.author.size() <= 20
+        // server 검증
+        && request.resource.data.server is string
+        && request.resource.data.server.size() > 0
+        // 초기값 검증
+        && request.resource.data.views == 0
+        && request.resource.data.comments is list
+        && request.resource.data.comments.size() == 0;
 
-      // 업데이트: 댓글 추가 또는 조회수 증가만 허용
-      allow update: if (
-        // 댓글 추가 (comments 배열에만 변경)
-        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['comments'])
-         && request.resource.data.comments.size() > resource.data.comments.size()
-         && request.resource.data.comments.size() <= resource.data.comments.size() + 1)
-        ||
-        // 조회수 증가 (views만 변경, 1씩만 증가)
+      // 업데이트: 조회수 증가 OR 댓글 추가만 허용
+      allow update: if
+        // 조회수 증가 (CommentSection.tsx:25)
         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views'])
          && request.resource.data.views == resource.data.views + 1)
-      );
+        ||
+        // 댓글 추가 (CommentSection.tsx:38)
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['comments'])
+         && request.resource.data.comments.size() == resource.data.comments.size() + 1
+         && request.resource.data.comments.size() <= resource.data.comments.size() + 1
+         // 새 댓글 검증
+         && request.resource.data.comments[request.resource.data.comments.size() - 1].keys().hasAll(['author', 'content', 'date'])
+         && request.resource.data.comments[request.resource.data.comments.size() - 1].author is string
+         && request.resource.data.comments[request.resource.data.comments.size() - 1].author.size() > 0
+         && request.resource.data.comments[request.resource.data.comments.size() - 1].author.size() <= 20
+         && request.resource.data.comments[request.resource.data.comments.size() - 1].content is string
+         && request.resource.data.comments[request.resource.data.comments.size() - 1].content.size() > 0
+         && request.resource.data.comments[request.resource.data.comments.size() - 1].content.size() <= 500);
 
       // 삭제: 관리자만 허용
       allow delete: if isAdmin();
