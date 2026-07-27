@@ -248,11 +248,13 @@ export default function AdminPage() {
 
     // 블록 데이터가 있으면 로드, 없으면 빈 배열
     if (item.blocks && Array.isArray(item.blocks)) {
+      const baseTime = Date.now();
       const loadedBlocks = item.blocks.map((block: any, index: number) => ({
-        id: `${Date.now()}_${index}`,
+        id: `edit_${baseTime}_${index}_${Math.random().toString(36).substr(2, 9)}`,
         type: block.type,
-        content: block.content || '',
-        url: block.url || ''
+        content: block.type === 'text' ? (block.content || '') : undefined,
+        url: block.type === 'image' ? (block.url || '') : undefined,
+        file: null
       }));
       setBlocks(loadedBlocks);
     } else {
@@ -571,14 +573,13 @@ export default function AdminPage() {
                         </div>
 
                         {block.type === 'text' ? (
-                          <div className="quill-wrapper">
+                          <div className="quill-wrapper" key={`wrapper_${block.id}`}>
                             <ReactQuill
-                              key={block.id}
+                              key={`quill_${block.id}_${block.content?.length || 0}`}
                               value={block.content || ''}
                               onChange={(value) => updateBlockContent(block.id, value)}
                               theme="snow"
                               placeholder="내용을 입력하세요 (드래그해서 스타일 적용)"
-                              readOnly={false}
                               modules={{
                                 toolbar: [
                                   [{ 'header': [1, 2, 3, false] }],
