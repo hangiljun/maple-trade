@@ -1,0 +1,81 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ========================================
+    // 기본 규칙: 모든 접근 차단
+    // ========================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ========================================
+    // 관리자 판별 함수
+    // ========================================
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == '6332159@gmail.com';
+    }
+
+    // ========================================
+    // News 컬렉션 (뉴스/이슈)
+    // ========================================
+    match /news/{docId} {
+      // 읽기: 모든 사용자 허용
+      allow read: if true;
+
+      // 쓰기(생성/수정/삭제): 관리자만 허용
+      allow write: if isAdmin();
+    }
+
+    // ========================================
+    // Tips 컬렉션 (이용안내/팁)
+    // ========================================
+    match /tips/{docId} {
+      // 읽기: 모든 사용자 허용
+      allow read: if true;
+
+      // 쓰기(생성/수정/삭제): 관리자만 허용
+      allow write: if isAdmin();
+    }
+
+    // ========================================
+    // Reviews 컬렉션 (이용후기)
+    // ========================================
+    match /reviews/{docId} {
+      // 읽기: 모든 사용자 허용
+      allow read: if true;
+
+      // 생성: 데이터 검증 후 허용
+      allow create: if request.auth == null  // 비로그인 사용자도 후기 작성 가능
+                    && request.resource.data.keys().hasAll(['title', 'content', 'author', 'server', 'date', 'createdAt', 'views', 'comments'])
+                    && request.resource.data.title is string
+                    && request.resource.data.title.size() > 0
+                    && request.resource.data.title.size() <= 100
+                    && request.resource.data.content is string
+                    && request.resource.data.content.size() > 0
+                    && request.resource.data.content.size() <= 2000
+                    && request.resource.data.author is string
+                    && request.resource.data.author.size() > 0
+                    && request.resource.data.author.size() <= 20
+                    && request.resource.data.server is string
+                    && request.resource.data.views == 0
+                    && request.resource.data.comments is list;
+
+      // 업데이트: 댓글 추가 또는 조회수 증가만 허용
+      allow update: if (
+        // 댓글 추가 (comments 배열에만 변경)
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['comments'])
+         && request.resource.data.comments.size() > resource.data.comments.size()
+         && request.resource.data.comments.size() <= resource.data.comments.size() + 1)
+        ||
+        // 조회수 증가 (views만 변경, 1씩만 증가)
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views'])
+         && request.resource.data.views == resource.data.views + 1)
+      );
+
+      // 삭제: 관리자만 허용
+      allow delete: if isAdmin();
+    }
+  }
+}

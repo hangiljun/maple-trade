@@ -1,0 +1,79 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ========================================
+    // 관리자 판별 함수
+    // ========================================
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == '6332159@gmail.com';
+    }
+
+    // ========================================
+    // 이미지 파일 검증 함수
+    // ========================================
+    function isValidImage() {
+      // 허용 확장자: jpg, jpeg, png, gif, webp
+      return request.resource.contentType.matches('image/.*')
+             && request.resource.contentType in ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/jpg'];
+    }
+
+    function isValidVideo() {
+      // 허용 확장자: mp4, webm
+      return request.resource.contentType.matches('video/.*')
+             && request.resource.contentType in ['video/mp4', 'video/webm'];
+    }
+
+    function isValidSize() {
+      // 최대 파일 크기: 10MB
+      return request.resource.size <= 10 * 1024 * 1024;
+    }
+
+    // ========================================
+    // 기본 규칙: 모든 접근 차단
+    // ========================================
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+
+    // ========================================
+    // News 폴더 (뉴스/이슈 이미지)
+    // ========================================
+    match /news/{allPaths=**} {
+      // 읽기: 모든 사용자 허용
+      allow read: if true;
+
+      // 쓰기: 관리자만, 이미지/동영상만, 크기 제한
+      allow write: if isAdmin()
+                   && (isValidImage() || isValidVideo())
+                   && isValidSize();
+    }
+
+    // ========================================
+    // Tips 폴더 (이용안내 이미지)
+    // ========================================
+    match /tips/{allPaths=**} {
+      // 읽기: 모든 사용자 허용
+      allow read: if true;
+
+      // 쓰기: 관리자만, 이미지/동영상만, 크기 제한
+      allow write: if isAdmin()
+                   && (isValidImage() || isValidVideo())
+                   && isValidSize();
+    }
+
+    // ========================================
+    // Reviews 폴더 (사용하지 않지만 혹시 모를 경우 대비)
+    // ========================================
+    match /reviews/{allPaths=**} {
+      // 읽기: 모든 사용자 허용
+      allow read: if true;
+
+      // 쓰기: 관리자만
+      allow write: if isAdmin()
+                   && (isValidImage() || isValidVideo())
+                   && isValidSize();
+    }
+  }
+}
