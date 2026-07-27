@@ -240,14 +240,16 @@ export default function AdminPage() {
 
   // ✅ 수정 시작 - 기존 데이터 불러오기
   const handleStartEdit = async (item: any) => {
+    console.log("수정할 아이템:", item); // 🔍 디버깅용
+
     setIsEditMode(true);
     setEditingId(item.id);
     setTitle(item.title || "");
     setCategory(item.category || "공지");
     setExistingThumbnail(item.thumbnail || ""); // 기존 썸네일 URL
 
-    // 블록 데이터가 있으면 로드, 없으면 빈 배열
-    if (item.blocks && Array.isArray(item.blocks)) {
+    // 블록 데이터가 있으면 로드
+    if (item.blocks && Array.isArray(item.blocks) && item.blocks.length > 0) {
       const baseTime = Date.now();
       const loadedBlocks = item.blocks.map((block: any, index: number) => ({
         id: `edit_${baseTime}_${index}_${Math.random().toString(36).substr(2, 9)}`,
@@ -256,8 +258,33 @@ export default function AdminPage() {
         url: block.type === 'image' ? (block.url || '') : undefined,
         file: null
       }));
+      console.log("로드된 블록:", loadedBlocks); // 🔍 디버깅용
       setBlocks(loadedBlocks);
-    } else {
+    }
+    // 구버전 데이터: content와 image 필드로 저장된 경우
+    else if (item.content || item.image) {
+      const legacyBlocks: ContentBlock[] = [];
+      const baseTime = Date.now();
+
+      if (item.content) {
+        legacyBlocks.push({
+          id: `edit_${baseTime}_0_text`,
+          type: 'text',
+          content: item.content
+        });
+      }
+      if (item.image) {
+        legacyBlocks.push({
+          id: `edit_${baseTime}_1_image`,
+          type: 'image',
+          url: item.image
+        });
+      }
+      console.log("구버전 데이터를 블록으로 변환:", legacyBlocks); // 🔍 디버깅용
+      setBlocks(legacyBlocks);
+    }
+    else {
+      console.warn("블록 데이터가 없습니다. 빈 배열로 시작합니다."); // 🔍 디버깅용
       setBlocks([]);
     }
 
