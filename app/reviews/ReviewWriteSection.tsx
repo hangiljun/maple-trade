@@ -7,7 +7,11 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 const SERVERS = ["챌린저스", "루나", "스카니아", "엘리시움", "크로아", "베라", "오로라", "기타서버", "에오스"];
 
-export default function ReviewWriteSection() {
+interface ReviewWriteSectionProps {
+  onReviewAdded?: (newReview: any) => void; // 낙관적 업데이트용 콜백
+}
+
+export default function ReviewWriteSection({ onReviewAdded }: ReviewWriteSectionProps) {
   const router = useRouter();
   const [isWriting, setIsWriting] = useState(false);
   const [inputTitle, setInputTitle] = useState("");
@@ -21,9 +25,11 @@ export default function ReviewWriteSection() {
     const content = inputContent.trim().slice(0, 2000);
     const author = inputAuthor.trim().slice(0, 20);
     if (!title || !content || !author) return alert("내용을 입력해주세요.");
+
     setSubmitting(true);
+
     try {
-      await addDoc(collection(db, "reviews"), {
+      const newReviewData = {
         title,
         content,
         author,
@@ -32,12 +38,37 @@ export default function ReviewWriteSection() {
         createdAt: serverTimestamp(),
         views: 0,
         comments: [],
-      });
+      };
+
+      // Firestore에 저장
+      const docRef = await addDoc(collection(db, "reviews"), newReviewData);
+
+      // ✅ 낙관적 업데이트: 부모 컴포넌트에 즉시 알림
+      if (onReviewAdded) {
+        onReviewAdded({
+          id: docRef.id,
+          ...newReviewData,
+          createdAt: new Date() // 임시로 현재 시간 사용
+        });
+      }
+
       alert("후기 등록 완료!");
-      setInputTitle(""); setInputContent(""); setInputAuthor(""); setInputServer("루나");
+      setInputTitle("");
+      setInputContent("");
+      setInputAuthor("");
+      setInputServer("루나");
       setIsWriting(false);
-      router.refresh();
-    } catch {
+
+      // ✅ router.refresh() 제거 - 낙관적 업데이트로 즉시 반영
+      // router.refresh(); // ❌ 이게 15초 지연의 원인!
+
+      // 3초 후 백그라운드에서 조용히 새로고침 (선택사항)
+      setTimeout(() => {
+        router.refresh();
+      }, 3000);
+
+    } catch (error) {
+      console.error("후기 작성 실패:", error);
       alert("오류가 발생했습니다.");
     } finally {
       setSubmitting(false);

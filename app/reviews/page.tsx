@@ -1,25 +1,9 @@
-import React from "react";
+"use client";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { db } from '../../firebase';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
-import type { Metadata } from "next";
+import { collection, getDocs, query, orderBy, onSnapshot } from 'firebase/firestore';
 import ReviewWriteSection from "./ReviewWriteSection";
-
-export const revalidate = 60;
-
-export const metadata: Metadata = {
-  title: "이용후기 - 메이플급처 실거래 고객 후기 | 메이플 급처템 안전거래",
-  description: "메이플급처에서 실제 거래하신 고객님들의 리얼 후기를 확인하세요. 스카니아, 루나, 엘리시움 등 전 서버 후기 모음. 평균 5분 이내 거래 완료.",
-  keywords: ["메이플급처 후기", "메이플 아이템 거래 후기", "메소 거래 후기", "메이플급처 리뷰", "메이플 안전거래 후기"],
-  openGraph: {
-    title: "이용후기 - 메이플급처",
-    description: "실제 고객님들의 거래 후기",
-    url: "https://www.메이플급처.com/reviews",
-  },
-  alternates: {
-    canonical: "https://www.메이플급처.com/reviews",
-  },
-};
 
 interface Review {
   id: string;
@@ -31,15 +15,38 @@ interface Review {
   comments?: unknown[];
 }
 
-export default async function ReviewsPage() {
-  let reviews: Review[] = [];
+export default function ReviewsPage() {
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  try {
-    const q = query(collection(db, "reviews"), orderBy("createdAt", "desc"));
-    const snap = await getDocs(q);
-    reviews = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Review[];
-  } catch (e) {
-    console.error("후기 로딩 실패", e);
+  // ✅ 실시간 구독 대신 1회 로드 + 낙관적 업데이트 방식
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const q = query(collection(db, "reviews"), orderBy("createdAt", "desc"));
+        const snap = await getDocs(q);
+        setReviews(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Review[]);
+      } catch (e) {
+        console.error("후기 로딩 실패", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReviews();
+  }, []);
+
+  // ✅ 낙관적 업데이트: 새 후기 추가 시 즉시 목록에 반영
+  const handleReviewAdded = (newReview: Review) => {
+    setReviews(prev => [newReview, ...prev]);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-gray-400">로딩 중...</div>
+      </div>
+    );
   }
 
   return (
@@ -50,7 +57,7 @@ export default async function ReviewsPage() {
             <h1 className="text-3xl font-black text-gray-900 mb-1">📢 이용후기</h1>
             <p className="text-gray-500 text-sm">고객님들의 실제 거래 후기</p>
           </div>
-          <ReviewWriteSection />
+          <ReviewWriteSection onReviewAdded={handleReviewAdded} />
         </div>
 
         <div className="bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm text-sm md:text-base">

@@ -27,7 +27,7 @@ type ContentBlock = {
   content?: string; // 텍스트 블록의 내용 (HTML)
   url?: string; // 이미지 블록의 URL
   file?: File | null; // 업로드할 파일 (임시)
-}; 
+};
 
 export default function AdminPage() {
   // --- 인증 상태 ---
@@ -42,7 +42,7 @@ export default function AdminPage() {
   // --- 데이터 상태 ---
   const [activeTab, setActiveTab] = useState("tips"); // tips | news | reviews
   const [list, setList] = useState<any[]>([]);
-    
+
   // 글쓰기 폼 상태
   const [title, setTitle] = useState("");
   const [blocks, setBlocks] = useState<ContentBlock[]>([]); // 블록 배열
@@ -124,7 +124,7 @@ export default function AdminPage() {
   };
 
   // ✅ 수정 취소 함수
-  const handleCancelEdit = () => {
+  const handleCancelEdit = useCallback(() => {
     setIsEditMode(false);
     setEditingId(null);
     setTitle("");
@@ -132,51 +132,55 @@ export default function AdminPage() {
     setCategory("공지");
     setThumbnailFile(null);
     setExistingThumbnail("");
-  };
+  }, []);
 
   // ✅ 블록 추가 함수
-  const addTextBlock = () => {
-    setBlocks([...blocks, {
+  const addTextBlock = useCallback(() => {
+    setBlocks(prev => [...prev, {
       id: Date.now().toString(),
       type: 'text',
       content: ''
     }]);
-  };
+  }, []);
 
-  const addImageBlock = () => {
-    setBlocks([...blocks, { id: Date.now().toString(), type: 'image', url: '' }]);
-  };
+  const addImageBlock = useCallback(() => {
+    setBlocks(prev => [...prev, { id: Date.now().toString(), type: 'image', url: '' }]);
+  }, []);
 
-  // ✅ 블록 삭제
-  const removeBlock = (id: string) => {
-    setBlocks(blocks.filter(b => b.id !== id));
-  };
+  // ✅ 블록 삭제 (useCallback 적용)
+  const removeBlock = useCallback((id: string) => {
+    setBlocks(prev => prev.filter(b => b.id !== id));
+  }, []);
 
-  // ✅ 블록 내용 변경
-  const updateBlockContent = (id: string, content: string) => {
-    setBlocks(blocks.map(b => b.id === id ? { ...b, content } : b));
-  };
+  // ✅ 블록 내용 변경 (useCallback 적용) - 성능 개선 핵심!
+  const updateBlockContent = useCallback((id: string, content: string) => {
+    setBlocks(prev => prev.map(b => b.id === id ? { ...b, content } : b));
+  }, []);
 
-  // ✅ 블록 이미지 파일 변경
-  const updateBlockFile = (id: string, file: File | null) => {
-    setBlocks(blocks.map(b => b.id === id ? { ...b, file } : b));
-  };
+  // ✅ 블록 이미지 파일 변경 (useCallback 적용)
+  const updateBlockFile = useCallback((id: string, file: File | null) => {
+    setBlocks(prev => prev.map(b => b.id === id ? { ...b, file } : b));
+  }, []);
 
-  // ✅ 블록 위로 이동
-  const moveBlockUp = (index: number) => {
+  // ✅ 블록 위로 이동 (useCallback 적용)
+  const moveBlockUp = useCallback((index: number) => {
     if (index === 0) return;
-    const newBlocks = [...blocks];
-    [newBlocks[index - 1], newBlocks[index]] = [newBlocks[index], newBlocks[index - 1]];
-    setBlocks(newBlocks);
-  };
+    setBlocks(prev => {
+      const newBlocks = [...prev];
+      [newBlocks[index - 1], newBlocks[index]] = [newBlocks[index], newBlocks[index - 1]];
+      return newBlocks;
+    });
+  }, []);
 
-  // ✅ 블록 아래로 이동
-  const moveBlockDown = (index: number) => {
-    if (index === blocks.length - 1) return;
-    const newBlocks = [...blocks];
-    [newBlocks[index], newBlocks[index + 1]] = [newBlocks[index + 1], newBlocks[index]];
-    setBlocks(newBlocks);
-  };
+  // ✅ 블록 아래로 이동 (useCallback 적용)
+  const moveBlockDown = useCallback((index: number) => {
+    setBlocks(prev => {
+      if (index === prev.length - 1) return prev;
+      const newBlocks = [...prev];
+      [newBlocks[index], newBlocks[index + 1]] = [newBlocks[index + 1], newBlocks[index]];
+      return newBlocks;
+    });
+  }, []);
 
   // --- 글 등록 (블록 기반) ---
   const handleUpload = async () => {
@@ -377,17 +381,17 @@ export default function AdminPage() {
           </div>
           <h1 className="text-2xl font-black text-gray-900 mb-2">관리자 로그인</h1>
           <p className="text-gray-500 text-sm mb-6">지정된 관리자 계정으로 접속하세요.</p>
-            
+
           <form onSubmit={handleLogin} className="space-y-4 text-left">
             <div>
               <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">이메일</label>
               <div className="relative">
                 <UserIcon size={18} className="absolute left-3 top-3 text-gray-400"/>
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   value={inputEmail}
                   onChange={(e) => setInputEmail(e.target.value)}
-                  placeholder="admin@email.com" 
+                  placeholder="admin@email.com"
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
                   required
                 />
@@ -397,17 +401,17 @@ export default function AdminPage() {
               <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">비밀번호</label>
               <div className="relative">
                 <Key size={18} className="absolute left-3 top-3 text-gray-400"/>
-                <input 
-                  type="password" 
+                <input
+                  type="password"
                   value={inputPassword}
                   onChange={(e) => setInputPassword(e.target.value)}
-                  placeholder="••••••••" 
+                  placeholder="••••••••"
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
                   required
                 />
               </div>
             </div>
-            <button 
+            <button
               type="submit"
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition shadow-lg mt-2"
             >
@@ -451,7 +455,7 @@ export default function AdminPage() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
-            
+
           {/* 왼쪽: 글쓰기 폼 (이용후기 탭에서는 숨김) */}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 h-fit">
             {activeTab === 'reviews' ? (
@@ -682,7 +686,7 @@ export default function AdminPage() {
                 </span>
                 <span className="text-xs font-normal text-gray-400">최신순 정렬</span>
               </h2>
-              
+
               {list.length === 0 ? (
                 <div className="text-center py-10 text-gray-400 bg-gray-50 rounded-xl border border-dashed">
                   등록된 데이터가 없습니다.
@@ -717,7 +721,7 @@ export default function AdminPage() {
                         )}
                       </div>
                     </div>
-                    
+
                     {item.thumbnail && (
                       <img src={item.thumbnail} alt="thumb" className="w-10 h-10 rounded-lg object-cover bg-gray-100 mr-3 border border-gray-200"/>
                     )}
