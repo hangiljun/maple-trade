@@ -573,10 +573,12 @@ export default function AdminPage() {
                         {block.type === 'text' ? (
                           <div className="quill-wrapper">
                             <ReactQuill
+                              key={block.id}
                               value={block.content || ''}
                               onChange={(value) => updateBlockContent(block.id, value)}
                               theme="snow"
                               placeholder="내용을 입력하세요 (드래그해서 스타일 적용)"
+                              readOnly={false}
                               modules={{
                                 toolbar: [
                                   [{ 'header': [1, 2, 3, false] }],
