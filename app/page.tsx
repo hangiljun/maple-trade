@@ -5,7 +5,7 @@ import {
   ShieldCheck, Zap, TrendingUp, Star,
   MessageCircle, FileText, ArrowRight, CheckCircle, Bell, Lightbulb, Megaphone
 } from "lucide-react";
-import { db } from '../firebase'; 
+import { db } from '../firebase';
 import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
 import FaqSection from "@/app/components/FaqSection";
 import type { Metadata } from "next";
@@ -44,13 +44,11 @@ export const metadata: Metadata = {
   title: "메이플 급처템 | 메이플스토리 급처 아이템·메소 안전거래 - 메이플급처",
   description: "메이플급처 - 급처템 전문 안전거래. 스카니아·루나·엘리시움 등 전 서버 최고가 매입, 평균 5분 완료.",
   keywords: [
-    "메이플 급처템", "메이플급처템", "메이플급처", "메이플 급처",
-    "메이플스토리 급처템", "메이플 아이템 급처",
-    "메이플 아이템 판매", "메이플 안전거래", "메이플 아이템 매입",
-    "스카니아 급처", "루나 급처", "엘리시움 급처", "크로아 급처",
-    "베라 급처", "오로라 급처", "레드 급처", "유니온 급처",
-    "제니스 급처", "아케인 급처", "노바 급처", "챌린저스 급처",
-    "에오스 급처", "헬리오스 급처",
+    "메이플 급처템",
+    "메이플급처",
+    "메이플 아이템 판매",
+    "메이플 안전거래",
+    "메이플 아이템 매입",
   ],
   alternates: {
     canonical: "https://www.메이플급처.com",
@@ -228,7 +226,7 @@ export default async function Home() {
               <div className="text-3xl mb-3">🎯</div>
               <h4 className="font-bold text-lg text-gray-800 mb-2">투명한 시세 측정</h4>
               <p className="text-sm text-gray-600 leading-relaxed">
-                단순히 가격만 제시하지 않습니다. 현재 매물, 거래 사례, 옵션 비교를 함께 설명해 판매자가 100% 납득하고 거래할 수 있도록 합니다.
+                단순히 가격만 제시하지 않습니다. 현재 매물, 거래 사례, 옵션 비교를 함께 설명해 판매자가 충분히 납득하고 거래할 수 있도록 합니다.
               </p>
             </div>
 
@@ -299,7 +297,7 @@ export default async function Home() {
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     <tr><td className="py-4 text-gray-600">속도</td><td className="text-gray-400">평균 3시간</td><td className="text-blue-600 font-bold">⚡ 평균 5분</td></tr>
-                    <tr><td className="py-4 text-gray-600">안전</td><td className="text-gray-400">개인 책임</td><td className="text-blue-600 font-bold">🛡️ 100% 보증</td></tr>
+                    <tr><td className="py-4 text-gray-600">안전</td><td className="text-gray-400">개인 책임</td><td className="text-blue-600 font-bold">🛡️ 안전 거래 원칙</td></tr>
                     <tr><td className="py-4 text-gray-600">시세</td><td className="text-gray-400">부정확함</td><td className="text-blue-600 font-bold">📊 실시간</td></tr>
                   </tbody>
                 </table>
@@ -385,12 +383,12 @@ export default async function Home() {
             </div>
           ) : (
             recentTips.map((tip) => (
-              <Link 
-                href={`/tip/${tip.id}`} 
-                key={tip.id} 
+              <Link
+                href={`/tip/${tip.id}`}
+                key={tip.id}
                 className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition cursor-pointer flex flex-col h-full"
               >
-                <div className="h-40 bg-gray-100 overflow-hidden">
+                <div className="h-40 bg-gray-100 overflow-hidden relative">
                   {tip.thumbnail ? (
                     <img src={tip.thumbnail} alt={tip.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                   ) : (
@@ -431,7 +429,7 @@ export default async function Home() {
             더보기 <ArrowRight size={14}/>
           </Link>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
           {recentReviews.length === 0 ? (
             <div className="col-span-full text-center py-10 text-gray-400 border border-dashed rounded-xl">
@@ -439,9 +437,9 @@ export default async function Home() {
             </div>
           ) : (
             recentReviews.map((review) => (
-              <Link 
+              <Link
                 href={`/reviews/${review.id}`}
-                key={review.id} 
+                key={review.id}
                 className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition cursor-pointer hover:-translate-y-1 block"
               >
                 <div className="flex justify-between items-start mb-3">

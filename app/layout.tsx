@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ["latin"] });
 // --- [SEO 설정] ---
 export const metadata: Metadata = {
   // ✅ 사장님의 진짜 도메인 (메이플급처.com)
-  metadataBase: new URL('https://www.메이플급처.com'), 
+  metadataBase: new URL('https://www.메이플급처.com'),
 
   title: {
     default: "메이플 급처템 | 메이플급처 - 메이플스토리 아이템·메소 안전거래",
@@ -19,19 +19,17 @@ export const metadata: Metadata = {
   description: "메이플스토리 급처템 안전거래. 전 서버 최고가 매입·최저가 판매, 24시간 평균 5분 이내 완료.",
 
   keywords: [
-    "메이플 급처템", "메이플급처템", "메이플급처", "메이플 급처",
-    "메이플스토리 급처템", "메이플 아이템 급처",
-    "메이플스토리", "메이플 아이템", "메이플 안전거래", "아이템 매입",
-    "스카니아 급처", "루나 급처", "엘리시움 급처", "크로아 급처",
-    "베라 급처", "오로라 급처", "레드 급처", "유니온 급처",
-    "제니스 급처", "아케인 급처", "노바 급처", "챌린저스 급처",
-    "에오스 급처", "헬리오스 급처",
+    "메이플 급처템",
+    "메이플급처",
+    "메이플 아이템 판매",
+    "메이플 안전거래",
+    "메이플 아이템 매입",
   ],
-  
+
   openGraph: {
     title: "메이플급처 - 메이플스토리 급처템 전문 거래소",
     description: "메이플급처.com - 메이플 급처템, 메소 안전거래 전문. 전 서버 24시간 카카오톡 상담.",
-    url: "https://www.메이플급처.com", 
+    url: "https://www.메이플급처.com",
     siteName: "메이플급처",
     locale: "ko_KR",
     type: "website",
@@ -47,7 +45,7 @@ export const metadata: Metadata = {
 
   // ✅ [수정 완료] 구글 & 네이버 인증 코드 완벽 적용!
   verification: {
-    google: "Rni7NhHr2qjpxvzQReEFBVyKhDnfaiwIpN044_AeS2Y", 
+    google: "Rni7NhHr2qjpxvzQReEFBVyKhDnfaiwIpN044_AeS2Y",
     other: {
       "naver-site-verification": "1ae03adb446f41df72a8747220abda5c871be51a",
     },
@@ -97,16 +95,16 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.className} min-h-screen flex flex-col`}>
-        
+
         {/* --- 헤더 시작 --- */}
         <header className="border-b border-gray-200 bg-white sticky top-0 z-50 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col items-center justify-center relative">
-            
+
             {/* 1. 로고 (가운데 정렬) */}
             <Link href="/" className="text-3xl md:text-4xl font-black text-gray-900 tracking-tighter hover:opacity-80 transition">
               메이플<span className="text-blue-600">급처</span>
             </Link>
-            
+
             {/* 2. 날짜 배지 + 카톡 버튼 */}
             <div className="mt-2 flex items-center gap-2">
               <div className="px-3 py-1 rounded-full border border-green-200 bg-green-50 text-green-600 text-sm font-bold shadow-[0_0_10px_rgba(34,197,94,0.4)] flex items-center gap-2">
@@ -117,7 +115,7 @@ export default function RootLayout({
                 {dateString} 정상 운영중
               </div>
 
-              <a 
+              <a
                 href={KAKAO_LINK}
                 target="_blank"
                 rel="noreferrer"
