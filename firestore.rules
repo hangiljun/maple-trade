@@ -11,12 +11,15 @@ service cloud.firestore {
     }
 
     // ========================================
-    // 관리자 판별 함수 (이메일 방식)
+    // 관리자 판별 함수 (UID + 이메일 이중 검증)
     // ========================================
     function isAdmin() {
-      // 실제 코드(app/admin/page.tsx:79)와 동일한 방식
+      // UID 방식 (기존 배포된 규칙에서 검증됨)
+      // OR 이메일 방식 (app/admin/page.tsx:79 코드와 일치)
+      // 둘 중 하나라도 일치하면 관리자로 인정
       return request.auth != null
-             && request.auth.token.email == '6332159@gmail.com';
+             && (request.auth.uid == 'vEE1mRec2eYZbfC61xst3rYr6vl1'
+                 || request.auth.token.email == '6332159@gmail.com');
     }
 
     // ========================================
