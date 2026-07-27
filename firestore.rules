@@ -3,93 +3,57 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ========================================
-    // 기본 규칙: 모든 접근 차단
-    // ========================================
-    match /{document=**} {
-      allow read, write: if false;
-    }
-
-    // ========================================
-    // 관리자 판별 함수 (UID + 이메일 이중 검증)
-    // ========================================
+    // 관리자 판별 (UID + 이메일 OR 검증)
     function isAdmin() {
-      // UID 방식 (기존 배포된 규칙에서 검증됨)
-      // OR 이메일 방식 (app/admin/page.tsx:79 코드와 일치)
-      // 둘 중 하나라도 일치하면 관리자로 인정
       return request.auth != null
              && (request.auth.uid == 'vEE1mRec2eYZbfC61xst3rYr6vl1'
                  || request.auth.token.email == '6332159@gmail.com');
     }
 
-    // ========================================
     // News 컬렉션 (뉴스/이슈)
-    // ========================================
     match /news/{docId} {
-      // 읽기: 모든 사용자 허용
       allow read: if true;
-
-      // 쓰기(생성/수정/삭제): 관리자만 허용
       allow create, update, delete: if isAdmin();
     }
 
-    // ========================================
-    // Tips 컬렉션 (이용안내/팁)
-    // 📌 주의: 폴더명은 tip(단수)이지만 컬렉션명은 tips(복수)
-    // ========================================
+    // Tips 컬렉션 (컬렉션명은 tips 복수)
     match /tips/{docId} {
-      // 읽기: 모든 사용자 허용
       allow read: if true;
-
-      // 쓰기(생성/수정/삭제): 관리자만 허용
       allow create, update, delete: if isAdmin();
     }
 
-    // ========================================
     // Reviews 컬렉션 (이용후기)
-    // ========================================
     match /reviews/{docId} {
-      // 읽기: 모든 사용자 허용
       allow read: if true;
 
-      // 생성: 비로그인 사용자도 가능, 데이터 검증 필수
+      // 생성: 데이터 검증
       allow create: if
-        // 필수 필드 존재 확인
         request.resource.data.keys().hasAll([
           'title', 'content', 'author', 'server',
           'date', 'createdAt', 'views', 'comments'
         ])
-        // title 검증
         && request.resource.data.title is string
         && request.resource.data.title.size() > 0
         && request.resource.data.title.size() <= 100
-        // content 검증
         && request.resource.data.content is string
         && request.resource.data.content.size() > 0
         && request.resource.data.content.size() <= 2000
-        // author 검증
         && request.resource.data.author is string
         && request.resource.data.author.size() > 0
         && request.resource.data.author.size() <= 20
-        // server 검증
         && request.resource.data.server is string
         && request.resource.data.server.size() > 0
-        // 초기값 검증
         && request.resource.data.views == 0
         && request.resource.data.comments is list
         && request.resource.data.comments.size() == 0;
 
-      // 업데이트: 조회수 증가 OR 댓글 추가만 허용
+      // 업데이트: 조회수 증가 또는 댓글 추가만
       allow update: if
-        // 조회수 증가 (CommentSection.tsx:25)
         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views'])
          && request.resource.data.views == resource.data.views + 1)
         ||
-        // 댓글 추가 (CommentSection.tsx:38)
         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['comments'])
          && request.resource.data.comments.size() == resource.data.comments.size() + 1
-         && request.resource.data.comments.size() <= resource.data.comments.size() + 1
-         // 새 댓글 검증
          && request.resource.data.comments[request.resource.data.comments.size() - 1].keys().hasAll(['author', 'content', 'date'])
          && request.resource.data.comments[request.resource.data.comments.size() - 1].author is string
          && request.resource.data.comments[request.resource.data.comments.size() - 1].author.size() > 0
@@ -98,7 +62,7 @@ service cloud.firestore {
          && request.resource.data.comments[request.resource.data.comments.size() - 1].content.size() > 0
          && request.resource.data.comments[request.resource.data.comments.size() - 1].content.size() <= 500);
 
-      // 삭제: 관리자만 허용
+      // 삭제: 관리자만
       allow delete: if isAdmin();
     }
   }
