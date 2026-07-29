@@ -6,7 +6,9 @@ import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import ImageViewer from "../../tip/ImageViewer";
-import LinkifyText from '@/app/components/LinkifyText';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkBreaks from 'remark-breaks';
 import 'react-quill/dist/quill.snow.css';
 
 export const dynamic = 'force-dynamic';
@@ -116,7 +118,7 @@ export default async function NewsDetailPage({ params }: Props) {
               ))}
             </div>
           ) : (
-            /* 하위 호환성: 기존 content 필드가 있는 경우 */
+            /* 하위 호환성: 기존 content 필드가 있는 경우 - 마크다운 렌더링 */
             <>
               {news.thumbnail && (
                 <div className="mb-8">
@@ -129,8 +131,77 @@ export default async function NewsDetailPage({ params }: Props) {
                   )}
                 </div>
               )}
-              <div className="text-gray-800 leading-relaxed whitespace-pre-line text-lg">
-                <LinkifyText text={news.content ?? ''} />
+              <div className="prose prose-lg max-w-none">
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm, remarkBreaks]}
+                  components={{
+                  // 제목
+                  h1: ({node, ...props}) => <h1 className="text-3xl font-bold text-gray-900 mt-8 mb-4" {...props} />,
+                  h2: ({node, ...props}) => <h2 className="text-2xl font-bold text-gray-900 mt-6 mb-3" {...props} />,
+                  h3: ({node, ...props}) => <h3 className="text-xl font-bold text-gray-900 mt-5 mb-2" {...props} />,
+
+                  // 문단
+                  p: ({node, ...props}) => <p className="text-gray-800 text-lg leading-relaxed mb-4" {...props} />,
+
+                  // 강조
+                  strong: ({node, ...props}) => <strong className="font-bold text-gray-900" {...props} />,
+                  em: ({node, ...props}) => <em className="italic text-gray-700" {...props} />,
+
+                  // 링크
+                  a: ({node, ...props}) => (
+                    <a
+                      className="text-blue-600 underline hover:text-blue-800 break-all"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      {...props}
+                    />
+                  ),
+
+                  // 리스트
+                  ul: ({node, ...props}) => <ul className="list-disc list-inside space-y-2 mb-4 text-gray-800" {...props} />,
+                  ol: ({node, ...props}) => <ol className="list-decimal list-inside space-y-2 mb-4 text-gray-800" {...props} />,
+                  li: ({node, ...props}) => <li className="text-lg" {...props} />,
+
+                  // 표 (GFM)
+                  table: ({node, ...props}) => (
+                    <div className="overflow-x-auto my-6">
+                      <table className="min-w-full border-collapse border border-gray-300" {...props} />
+                    </div>
+                  ),
+                  thead: ({node, ...props}) => <thead className="bg-gray-100" {...props} />,
+                  tbody: ({node, ...props}) => <tbody className="bg-white divide-y divide-gray-200" {...props} />,
+                  tr: ({node, ...props}) => <tr className="hover:bg-gray-50" {...props} />,
+                  th: ({node, ...props}) => (
+                    <th className="border border-gray-300 px-4 py-2 text-left font-bold text-gray-900" {...props} />
+                  ),
+                  td: ({node, ...props}) => (
+                    <td className="border border-gray-300 px-4 py-2 text-gray-800" {...props} />
+                  ),
+
+                  // 코드
+                  code: ({node, inline, ...props}: any) =>
+                    inline ? (
+                      <code className="bg-gray-100 text-red-600 px-1.5 py-0.5 rounded text-sm font-mono" {...props} />
+                    ) : (
+                      <code className="block bg-gray-100 text-gray-800 p-4 rounded-lg overflow-x-auto text-sm font-mono mb-4" {...props} />
+                    ),
+
+                  // 인용구
+                  blockquote: ({node, ...props}) => (
+                    <blockquote className="border-l-4 border-blue-500 pl-4 py-2 my-4 text-gray-700 italic bg-blue-50" {...props} />
+                  ),
+
+                  // 이미지
+                  img: ({node, ...props}) => (
+                    <img className="rounded-lg my-4 max-w-full h-auto shadow-sm border border-gray-200" {...props} />
+                  ),
+
+                  // 구분선
+                  hr: ({node, ...props}) => <hr className="my-6 border-gray-300" {...props} />,
+                  }}
+                >
+                  {news.content ?? ''}
+                </ReactMarkdown>
               </div>
             </>
           )}
