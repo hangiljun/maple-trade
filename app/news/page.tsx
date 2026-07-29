@@ -4,7 +4,7 @@ import { db } from '../../firebase';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import type { Metadata } from "next";
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: "메이플 이슈 & 뉴스 - 메이플스토리 업데이트·공지사항 | 메이플급처",

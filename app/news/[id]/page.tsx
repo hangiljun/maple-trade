@@ -9,6 +9,8 @@ import ImageViewer from "../../tip/ImageViewer";
 import LinkifyText from '@/app/components/LinkifyText';
 import 'react-quill/dist/quill.snow.css';
 
+export const dynamic = 'force-dynamic';
+
 type Props = { params: { id: string } };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
