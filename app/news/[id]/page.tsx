@@ -9,11 +9,39 @@ import ImageViewer from "../../tip/ImageViewer";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
+import DOMPurify from 'isomorphic-dompurify';
 import 'react-quill/dist/quill.snow.css';
 
 export const dynamic = 'force-dynamic';
 
 type Props = { params: { id: string } };
+
+// ✅ DOMPurify 설정 - 표와 스타일 허용
+const sanitizeConfig = {
+  ALLOWED_TAGS: [
+    'p', 'br', 'strong', 'em', 'u', 's', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+    'ul', 'ol', 'li', 'a', 'img', 'blockquote', 'code', 'pre',
+    'table', 'thead', 'tbody', 'tr', 'th', 'td',  // 표 태그
+    'span', 'div'
+  ],
+  ALLOWED_ATTR: [
+    'href', 'target', 'rel', 'src', 'alt', 'title', 'width', 'height',
+    'style', 'class', 'colspan', 'rowspan'  // 표 속성
+  ],
+  ALLOWED_STYLES: {
+    '*': {
+      'color': [/^#[0-9a-fA-F]{3,6}$/],
+      'background-color': [/^#[0-9a-fA-F]{3,6}$/, /^rgb/],
+      'font-size': [/^\d+(?:px|em|rem|%)$/],
+      'text-align': [/^left$/, /^right$/, /^center$/, /^justify$/],
+      'border': [/.*/],
+      'border-collapse': [/^collapse$/],
+      'width': [/.*/],
+      'padding': [/.*/],
+      'margin': [/.*/]
+    }
+  }
+};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const docSnap = await getDoc(doc(db, "news", params.id));
@@ -101,13 +129,10 @@ export default async function NewsDetailPage({ params }: Props) {
                 <div key={index}>
                   {block.type === 'text' ? (
                     <div
-                      className="ql-editor prose prose-lg max-w-none"
-                      style={{
-                        color: '#1f2937',
-                        fontSize: '18px',
-                        lineHeight: '1.75'
+                      className="news-content prose prose-lg max-w-none"
+                      dangerouslySetInnerHTML={{
+                        __html: DOMPurify.sanitize(block.content || '', sanitizeConfig)
                       }}
-                      dangerouslySetInnerHTML={{ __html: block.content || '' }}
                     />
                   ) : block.type === 'image' && block.url ? (
                     <div className="my-6">
