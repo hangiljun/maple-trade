@@ -12,19 +12,80 @@ interface SmartContentProps {
 
 /**
  * HTML과 마크다운을 자동으로 판별하여 적절한 방식으로 렌더링
- * - HTML 태그가 있으면 → SanitizedHTML (XSS 방지)
- * - 마크다운 문법만 있으면 → ReactMarkdown (표/볼드/제목 지원)
+ *
+ * 3가지 케이스:
+ * 1. 진짜 HTML (에디터로 작성) → SanitizedHTML
+ * 2. 마크다운을 <p>로 감싼 글 (붙여넣기) → <p> 벗기고 ReactMarkdown
+ * 3. 순수 마크다운 → ReactMarkdown
  */
 const SmartContent: React.FC<SmartContentProps> = ({ content, className }) => {
-  // HTML 태그 감지 (간단하고 안전한 방법)
-  const isHTML = /<[^>]+>/.test(content);
+  // 의미있는 HTML 태그 (에디터로 제대로 작성한 글)
+  const meaningfulTags = /<(strong|em|u|s|table|thead|tbody|tr|th|td|ul|ol|li|h[1-6]|img|a|span|div|blockquote|code|pre)\b[^>]*>/i;
 
-  if (isHTML) {
-    // HTML 렌더링 (에디터로 작성한 글)
+  // 마크다운 문법 감지
+  const markdownSyntax = /(\|.*\|)|(\*\*.*\*\*)|(^#{1,6}\s)|(\n#{1,6}\s)|(^[-*+]\s)|(^\d+\.\s)|(^>\s)/m;
+
+  const hasMeaningfulHTML = meaningfulTags.test(content);
+  const hasOnlyParagraphTags = /<[^>]+>/.test(content); // HTML 태그가 있는지
+  const hasMarkdownSyntax = markdownSyntax.test(content);
+
+  // 🔍 디버깅 (개발 중에만 활성화)
+  // console.log('=== SmartContent Debug ===');
+  // console.log('Has meaningful HTML:', hasMeaningfulHTML);
+  // console.log('Has only paragraph tags:', hasOnlyParagraphTags);
+  // console.log('Has markdown syntax:', hasMarkdownSyntax);
+
+  // 케이스 1: 진짜 HTML (의미있는 태그 포함)
+  if (hasMeaningfulHTML) {
+    // console.log('→ Rendering as real HTML');
     return <SanitizedHTML html={content} className={className} />;
   }
 
-  // 마크다운 렌더링 (AI가 생성한 글, 붙여넣기)
+  // 케이스 2: 마크다운을 <p>로 감싼 글
+  if (hasOnlyParagraphTags && hasMarkdownSyntax) {
+    // console.log('→ Unwrapping <p> tags and rendering as Markdown');
+    const unwrappedMarkdown = unwrapParagraphTags(content);
+    return renderMarkdown(unwrappedMarkdown, className);
+  }
+
+  // 케이스 3: 순수 마크다운 (HTML 태그 없음)
+  // console.log('→ Rendering as pure Markdown');
+  return renderMarkdown(content, className);
+};
+
+/**
+ * <p> 태그를 벗기고 순수 마크다운으로 복원
+ */
+function unwrapParagraphTags(html: string): string {
+  let markdown = html;
+
+  // <p><br></p> 또는 <p><br/></p> → 빈 줄
+  markdown = markdown.replace(/<p><br\s*\/?><\/p>/gi, '\n');
+
+  // <p>content</p> → content\n
+  markdown = markdown.replace(/<p>(.*?)<\/p>/gi, '$1\n');
+
+  // <br> 또는 <br/> → \n
+  markdown = markdown.replace(/<br\s*\/?>/gi, '\n');
+
+  // HTML 엔티티 디코드
+  markdown = markdown.replace(/&lt;/g, '<');
+  markdown = markdown.replace(/&gt;/g, '>');
+  markdown = markdown.replace(/&amp;/g, '&');
+  markdown = markdown.replace(/&nbsp;/g, ' ');
+  markdown = markdown.replace(/&quot;/g, '"');
+  markdown = markdown.replace(/&#39;/g, "'");
+
+  // 연속된 빈 줄 정리 (3개 이상 → 2개)
+  markdown = markdown.replace(/\n{3,}/g, '\n\n');
+
+  return markdown.trim();
+}
+
+/**
+ * 마크다운을 ReactMarkdown으로 렌더링
+ */
+function renderMarkdown(markdown: string, className?: string) {
   return (
     <div className={className}>
       <ReactMarkdown
@@ -95,10 +156,10 @@ const SmartContent: React.FC<SmartContentProps> = ({ content, className }) => {
           hr: ({node, ...props}) => <hr className="my-6 border-gray-300" {...props} />,
         }}
       >
-        {content}
+        {markdown}
       </ReactMarkdown>
     </div>
   );
-};
+}
 
 export default SmartContent;
