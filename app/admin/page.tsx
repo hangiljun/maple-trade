@@ -212,14 +212,25 @@ export default function AdminPage() {
         })
       );
 
-      await addDoc(collection(db, activeTab), {
+      // undefined 값 제거하여 addDoc 호출
+      const newData: any = {
         title,
         blocks: uploadedBlocks,
-        category: (activeTab === 'news' || activeTab === 'tips') ? category : null,
-        thumbnail: thumbnailUrl,
         date: new Date().toLocaleDateString('ko-KR'),
         createdAt: new Date()
-      });
+      };
+
+      // category는 news/tips 탭에만 저장
+      if (activeTab === 'news' || activeTab === 'tips') {
+        newData.category = category;
+      }
+
+      // thumbnail이 있을 때만 저장
+      if (thumbnailUrl) {
+        newData.thumbnail = thumbnailUrl;
+      }
+
+      await addDoc(collection(db, activeTab), newData);
 
       alert("등록되었습니다!");
       setTitle("");
@@ -310,12 +321,23 @@ export default function AdminPage() {
         })
       );
 
-      await updateDoc(doc(db, activeTab, editingId), {
+      // undefined 값 제거하여 updateDoc 호출
+      const updateData: any = {
         title,
         blocks: uploadedBlocks,
-        category: (activeTab === 'news' || activeTab === 'tips') ? category : null,
-        thumbnail: thumbnailUrl,
-      });
+      };
+
+      // category는 news/tips 탭에만 저장
+      if (activeTab === 'news' || activeTab === 'tips') {
+        updateData.category = category;
+      }
+
+      // thumbnail이 있을 때만 저장
+      if (thumbnailUrl) {
+        updateData.thumbnail = thumbnailUrl;
+      }
+
+      await updateDoc(doc(db, activeTab, editingId), updateData);
 
       alert("수정되었습니다!");
       handleCancelEdit();
