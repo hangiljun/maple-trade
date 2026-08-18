@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft, Calendar, User } from 'lucide-react';
 import type { Metadata } from 'next';
 import ImageViewer from '../ImageViewer';
-import LinkifyText from '@/app/components/LinkifyText';
+import SmartContent from '@/app/components/SmartContent';
 import 'react-quill/dist/quill.snow.css';
 
 type Props = { params: { id: string } };
@@ -98,14 +98,9 @@ export default async function TipDetail({ params }: Props) {
               {post.blocks.map((block: any, index: number) => (
                 <div key={index}>
                   {block.type === 'text' ? (
-                    <div
-                      className="ql-editor prose prose-lg max-w-none"
-                      style={{
-                        color: '#1f2937',
-                        fontSize: '16px',
-                        lineHeight: '1.75'
-                      }}
-                      dangerouslySetInnerHTML={{ __html: block.content || '' }}
+                    <SmartContent
+                      content={block.content || ''}
+                      className="news-content prose prose-lg max-w-none"
                     />
                   ) : block.type === 'image' && block.url ? (
                     <div className="my-6 text-center">
@@ -127,9 +122,10 @@ export default async function TipDetail({ params }: Props) {
                   )}
                 </div>
               )}
-              <div className="whitespace-pre-wrap">
-                <LinkifyText text={post.content ?? ''} />
-              </div>
+              <SmartContent
+                content={post.content ?? ''}
+                className="news-content prose prose-lg max-w-none"
+              />
             </>
           )}
         </div>
