@@ -4,6 +4,7 @@ import "./globals.css";
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 import { KAKAO_LINK } from "@/lib/constants";
+import CurrentDate from "./components/CurrentDate";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -83,9 +84,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const today = new Date();
-  const dateString = `${today.getMonth() + 1}월 ${today.getDate()}일`;
-
   return (
     <html lang="ko">
       <head>
@@ -112,7 +110,7 @@ export default function RootLayout({
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                 </span>
-                {dateString} 정상 운영중
+                <CurrentDate /> 정상 운영중
               </div>
 
               <a
