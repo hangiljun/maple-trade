@@ -199,16 +199,26 @@ export default function AdminPage() {
       const uploadedBlocks = await Promise.all(
         blocks.map(async (block) => {
           if (block.type === 'image' && block.file) {
+            // 새 이미지 파일 업로드
             const storageRef = ref(storage, `${activeTab}/${Date.now()}_${block.file.name}`);
             await uploadBytes(storageRef, block.file);
             const url = await getDownloadURL(storageRef);
             return { type: 'image', url };
           } else if (block.type === 'text') {
-            return { type: 'text', content: block.content || '' };
+            // 텍스트 블록 - undefined 필드 제거
+            return {
+              type: 'text',
+              content: block.content || ''
+            };
           } else if (block.type === 'image' && block.url) {
+            // 기존 이미지 URL 유지
             return { type: 'image', url: block.url };
           }
-          return block;
+          // 예외 케이스 - undefined 제거
+          const cleanBlock: any = { type: block.type };
+          if (block.content !== undefined) cleanBlock.content = block.content;
+          if (block.url !== undefined) cleanBlock.url = block.url;
+          return cleanBlock;
         })
       );
 
@@ -308,16 +318,26 @@ export default function AdminPage() {
       const uploadedBlocks = await Promise.all(
         blocks.map(async (block) => {
           if (block.type === 'image' && block.file) {
+            // 새 이미지 파일 업로드
             const storageRef = ref(storage, `${activeTab}/${Date.now()}_${block.file.name}`);
             await uploadBytes(storageRef, block.file);
             const url = await getDownloadURL(storageRef);
             return { type: 'image', url };
           } else if (block.type === 'text') {
-            return { type: 'text', content: block.content || '' };
+            // 텍스트 블록 - undefined 필드 제거
+            return {
+              type: 'text',
+              content: block.content || ''
+            };
           } else if (block.type === 'image' && block.url) {
+            // 기존 이미지 URL 유지
             return { type: 'image', url: block.url };
           }
-          return block;
+          // 예외 케이스 - undefined 제거
+          const cleanBlock: any = { type: block.type };
+          if (block.content !== undefined) cleanBlock.content = block.content;
+          if (block.url !== undefined) cleanBlock.url = block.url;
+          return cleanBlock;
         })
       );
 
