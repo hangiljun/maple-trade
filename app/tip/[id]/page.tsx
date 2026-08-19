@@ -11,6 +11,7 @@ import remarkBreaks from 'remark-breaks';
 import CompareBar from '@/app/components/mdx/CompareBar';
 import Callout from '@/app/components/mdx/Callout';
 import Checklist from '@/app/components/mdx/Checklist';
+import Button from '@/app/components/mdx/Button';
 
 type Props = { params: { id: string } };
 
@@ -20,6 +21,7 @@ const components = {
   CompareBar,
   Callout,
   Checklist,
+  Button,
 
   // 제목
   h1: (props: any) => <h1 className="text-3xl text-gray-900 mt-8 mb-4" style={{ fontWeight: 600 }} {...props} />,
