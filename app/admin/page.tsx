@@ -72,6 +72,11 @@ export default function AdminPage() {
       setLoading(false);
       if (currentUser) {
         setUser(currentUser);
+        // 디버깅용 로그
+        console.log("🔍 로그인한 이메일:", currentUser.email);
+        console.log("🔍 허용된 관리자 이메일:", ADMIN_EMAIL);
+        console.log("🔍 일치 여부:", currentUser.email === ADMIN_EMAIL);
+
         if (currentUser.email === ADMIN_EMAIL) {
           setIsAuthorized(true);
         } else {
@@ -628,6 +633,7 @@ export default function AdminPage() {
                         )}
                         <h3 className="font-bold text-gray-800">{item.title}</h3>
                         <p className="text-xs text-gray-400 mt-1">{item.date}</p>
+                        <p className="text-xs text-blue-500 font-mono mt-0.5">ID: {item.id}</p>
                         {activeTab === 'reviews' && (
                           <div className="text-xs text-gray-500 mt-1">
                             작성자: {item.author} | 서버: {item.server}

@@ -1,7 +1,7 @@
 "use client";
 import React, { useCallback, memo } from 'react';
 import { X, MoveUp, MoveDown } from 'lucide-react';
-import QuillEditor from './QuillEditor';
+import MarkdownEditor from './MarkdownEditor';
 
 interface ContentBlock {
   id: string;
@@ -94,10 +94,10 @@ const BlockEditor = memo(({
       </div>
 
       {block.type === 'text' ? (
-        <QuillEditor
+        <MarkdownEditor
           value={block.content || ''}
           onChange={handleContentChange}
-          placeholder="내용을 입력하세요 (드래그해서 스타일 적용)"
+          placeholder="MDX 문법으로 작성하세요 (마크다운 + 커스텀 컴포넌트)"
         />
       ) : (
         <div>
